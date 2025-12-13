@@ -62,6 +62,7 @@ Seguindo a arquitetura de microsserviços, adotaremos a seguinte stack:
 * `/docs` - Documentação complementar
 
 #### Visão Geral do Repositório
+```
 hackathon-sentimentapi-analytics
 │
 ├── backend/                # Spring Boot (Java)
@@ -76,7 +77,7 @@ hackathon-sentimentapi-analytics
 │
 ├── doc/                    # Documentação
 └── README.md
-
+```
 ---
 
 ### 👥 **Equipe do Projeto**
