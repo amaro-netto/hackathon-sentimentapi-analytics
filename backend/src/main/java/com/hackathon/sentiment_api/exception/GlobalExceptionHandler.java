@@ -1,4 +1,4 @@
-package com.hackathon.sentimentapi.exception;
+package com.hackathon.sentiment_api.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -14,7 +14,7 @@ class SentimentRequest(BaseModel):
     texto: str  
 
 # --- Carregamento do Modelo ---
-MODEL_PATH = "model.joblib"
+MODEL_PATH = "project.joblib"
 model = None
 
 @app.on_event("startup")

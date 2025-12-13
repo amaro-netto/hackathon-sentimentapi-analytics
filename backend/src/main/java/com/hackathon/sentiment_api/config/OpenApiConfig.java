@@ -1,4 +1,4 @@
-package com.hackathon.sentimentapi.config;
+package com.hackathon.sentiment_api.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
