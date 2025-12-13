@@ -1,4 +1,4 @@
-# Projeto 1: SentimentAPI — Análise de Sentimentos de Feedbacks
+# Projeto: SentimentAPI — Análise de Sentimentos de Feedbacks
 
 ![Status: Em Desenvolvimento](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
