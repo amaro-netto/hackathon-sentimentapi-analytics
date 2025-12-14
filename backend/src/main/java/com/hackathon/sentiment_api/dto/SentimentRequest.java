@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record SentimentRequest(
     @NotBlank(message = "O texto é obrigatório")
-    String texto
+    String text
 ) {
     //"texto": "Adorei o atendimento!"
 }
