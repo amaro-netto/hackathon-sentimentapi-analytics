@@ -33,25 +33,26 @@ def health_check():
 
 @app.post("/predict")
 def predict(request: SentimentRequest):
-    # Lógica: Se o modelo existir, usa ele. Se não, simula uma resposta.
     if model:
         try:
-            # AQUI: Usamos request.texto (o nome que vem do Java)
+            # 1. Faz a previsão (Positivo/Negativo/Neutro)
             prediction = model.predict([request.texto])[0]
             
-            # Tenta pegar probabilidade se o modelo suportar
-            proba = 0.99 if hasattr(model, "predict_proba") else 0.0
+            # 2. CALCULA A CERTEZA REAL (Isso muda o 0.99 fixo)
+            # O modelo retorna algo como [0.10, 0.85, 0.05] (probabilidade de cada classe)
+            # Nós pegamos o maior número (0.85)
+            probs = model.predict_proba([request.texto])[0]
+            proba = float(max(probs))
             
             return {"previsao": str(prediction), "probabilidade": proba}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     else:
-        # MODO DUMMY (Para teste enquanto o modelo não é treinado)
-        # Retorna nomes de campos padrão (previsao/probabilidade)
+        # Modo Dummy (Só se o arquivo sumir)
         return {
             "previsao": "Positivo (Simulado)", 
-            "probabilidade": 0.75,
-            "debug_texto_recebido": request.texto
+            "probabilidade": 0.0,
+            "debug": "Sem modelo carregado"
         }
 
 # --- Inicialização ---
