@@ -1,52 +1,67 @@
 package com.hackathon.sentiment_api.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.hackathon.sentiment_api.client.PythonClient;
 import com.hackathon.sentiment_api.dto.SentimentRequest;
 import com.hackathon.sentiment_api.dto.SentimentResponse;
-import com.hackathon.sentiment_api.model.SentimentLog;          // ADICIONADO
-import com.hackathon.sentiment_api.repository.SentimentLogRepository; // ADICIONADO
+import com.hackathon.sentiment_api.model.SentimentLog;
+import com.hackathon.sentiment_api.repository.SentimentLogRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SentimentService {
 
     private static final Logger log = LoggerFactory.getLogger(SentimentService.class);
-    
+
     @Autowired
     private PythonClient pythonClient;
 
-    @Autowired                                  
-    private SentimentLogRepository repository;  // ADICIONADO: Injetamos o banco aqui
+    @Autowired
+    private SentimentLogRepository repository;
 
+    @Autowired
+    @Lazy // Permite que a classe chame seus próprios métodos cacheados
+    private SentimentService self;
 
+    /**
+     * MÉTODO PÚBLICO (SEM CACHE)
+     * Este é o método que o Controller chama.
+     * Ele garante que o log seja salvo no banco SEMPRE (mesmo se vier do cache).
+     */
     public SentimentResponse analisarSentimento(SentimentRequest request) {
         
-        log.info("Iniciando análise de sentimento");
-        
-        //O Java pede para o Python analisar!
-        SentimentResponse resposta = pythonClient.analisar(request);
-        
-        //  Salvar o Log no Banco H2
+        // 1. Tenta pegar a resposta (Do Cache ou do Python)
+        // Usamos 'self' para o Spring interceptar a chamada e checar o cache
+        SentimentResponse resposta = self.processarAnaliseInterna(request);
+
+        // 2. Salva no Banco (Isso roda TODA VEZ, garantindo auditoria)
         try {
-            SentimentLog logEntity = new SentimentLog(
-                request.text(),             
-                resposta.previsao(),         
+            SentimentLog logBanco = new SentimentLog(
+                request.text(), 
+                resposta.previsao(), 
                 resposta.probabilidade()
             );
-            
-            repository.save(logEntity);
-            log.info("Log salvo no banco com sucesso. id={}", logEntity.getId());
-            
+            repository.save(logBanco);
+            // Logamos o ID para você ver no console que gravou
+            log.info("✅ Log salvo no banco! ID: {}", logBanco.getId());
         } catch (Exception e) {
-            // Não quebra o fluxo principal, apenas registra o erro corretamente.
-            log.error("Erro ao salvar log no banco (análise retornada com sucesso)", e);
+            log.error("Erro ao salvar log no banco", e);
         }
 
-        log.info("Análise de sentimento concluída");
-
         return resposta;
+    }
+
+    /**
+     * MÉTODO INTERNO (COM CACHE)
+     * O Spring só executa este método se o texto não estiver na memória.
+     */
+    @Cacheable(value = "sentimentos", key = "#request.text()")
+    public SentimentResponse processarAnaliseInterna(SentimentRequest request) {
+        log.info("🐍 Cache Miss! Chamando API Python para texto inédito: {}", request.text());
+        return pythonClient.analisar(request);
     }
 }
