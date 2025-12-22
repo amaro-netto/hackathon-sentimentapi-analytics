@@ -1,4 +1,6 @@
+// ===============================
 // Elementos DOM
+// ===============================
 const reviewInput = document.getElementById("reviewInput");
 const classifyBtn = document.getElementById("classifyBtn");
 const charCount = document.getElementById("charCount");
@@ -12,16 +14,90 @@ const historyList = document.getElementById("historyList");
 const emptyHistory = document.getElementById("emptyHistory");
 const loading = document.getElementById("loading");
 
-// Histórico de análises
+// ===============================
+// Configurações
+// ===============================
+const HISTORY_LIMIT = 10;
+
+const SENTIMENT_CONFIG = {
+    positive: [
+        "excelente",
+        "otimo",
+        "bom",
+        "recomendo",
+        "rapido",
+        "eficiente",
+        "maravilhoso",
+        "perfeito",
+        "adoro",
+        "gostei"
+    ],
+    negative: [
+        "ruim",
+        "pessimo",
+        "horrivel",
+        "lento",
+        "problema",
+        "defeito",
+        "decepcionado",
+        "terrivel",
+        "insatisfeito"
+    ],
+    negations: ["nao", "nunca", "jamais"],
+    stopWords: ["sobre", "muito", "quando", "porque"]
+};
+
+// ===============================
+// Estado
+// ===============================
 let analysisHistory =
     JSON.parse(localStorage.getItem("analysisHistory")) || [];
+
+// ===============================
+// Utilidades
+// ===============================
+
+// Normaliza texto (remove acentos)
+function normalizeText(text) {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
+
+function showLoading() {
+    loading.classList.add("show");
+    result.classList.remove("show");
+}
+
+function hideLoading() {
+    loading.classList.remove("show");
+}
+
+function saveHistory() {
+    localStorage.setItem(
+        "analysisHistory",
+        JSON.stringify(analysisHistory)
+    );
+}
+
+// ===============================
+// Eventos
+// ===============================
 
 // Contador de caracteres
 reviewInput.addEventListener("input", () => {
     charCount.textContent = reviewInput.value.length;
 });
 
-// Classificar avaliação
+// Atalho Ctrl+Enter / Cmd+Enter
+reviewInput.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        classifyBtn.click();
+    }
+});
+
+// Clique no botão de classificar
 classifyBtn.addEventListener("click", () => {
     const reviewText = reviewInput.value.trim();
 
@@ -31,119 +107,129 @@ classifyBtn.addEventListener("click", () => {
         return;
     }
 
-    loading.classList.add("show");
-    result.classList.remove("show");
-
-    // Simulação de chamada ao backend
-    setTimeout(() => {
-        const response = simulateClassification(reviewText);
-
-        displayResult(response);
-        addToHistory(reviewText, response);
-
-        loading.classList.remove("show");
-
-        localStorage.setItem(
-            "analysisHistory",
-            JSON.stringify(analysisHistory)
-        );
-    }, 1200);
+    startAnalysis(reviewText);
 });
 
-// Simulação da classificação (3 categorias)
-function simulateClassification(text) {
-    const positiveWords = [
-        "excelente",
-        "ótimo",
-        "bom",
-        "recomendo",
-        "rápido",
-        "eficiente",
-        "maravilhoso",
-        "perfeito",
-        "adoro",
-        "gostei"
-    ];
+// ===============================
+// Fluxo principal
+// ===============================
+function startAnalysis(text) {
+    showLoading();
 
-    const negativeWords = [
-        "ruim",
-        "péssimo",
-        "horrível",
-        "lento",
-        "problema",
-        "defeito",
-        "decepcionado",
-        "não recomendo",
-        "terrível",
-        "insatisfeito"
-    ];
+    setTimeout(() => {
+        const response = simulateClassification(text);
+        finishAnalysis(text, response);
+    }, 1200);
+}
+
+function finishAnalysis(text, response) {
+    displayResult(response);
+    addToHistory(text, response);
+    saveHistory();
+    hideLoading();
+}
+
+// ===============================
+// Classificação (3 categorias)
+// ===============================
+function simulateClassification(text) {
+    const words = normalizeText(text).split(/\W+/);
 
     let positiveCount = 0;
     let negativeCount = 0;
 
-    const words = text.toLowerCase().split(/\W+/);
+    words.forEach((word, index) => {
+        const prevWord = words[index - 1];
 
-    words.forEach(word => {
-        if (positiveWords.includes(word)) positiveCount++;
-        if (negativeWords.includes(word)) negativeCount++;
+        if (
+            SENTIMENT_CONFIG.positive.includes(word) &&
+            !SENTIMENT_CONFIG.negations.includes(prevWord)
+        ) {
+            positiveCount++;
+        }
+
+        if (SENTIMENT_CONFIG.negative.includes(word)) {
+            negativeCount++;
+        }
     });
 
-    let sentiment;
-    let confidence;
-
-    if (positiveCount > negativeCount) {
-        sentiment = "Positiva";
-        confidence = 80 + Math.floor(Math.random() * 20);
-    } else if (negativeCount > positiveCount) {
-        sentiment = "Negativa";
-        confidence = 80 + Math.floor(Math.random() * 20);
-    } else {
-        sentiment = "Neutra";
-        confidence = 65 + Math.floor(Math.random() * 20);
-    }
-
-    const extractedKeywords = words
-        .filter(word => word.length > 4)
-        .slice(0, 3)
-        .join(", ");
-
     return {
-        sentiment,
-        confidence,
+        sentiment: getSentiment(positiveCount, negativeCount),
+        confidence: calculateConfidence(positiveCount, negativeCount),
         keywords:
-            extractedKeywords ||
+            extractKeywords(words) ||
             "Nenhuma palavra-chave identificada"
     };
 }
 
-// Exibir resultado
+function getSentiment(positive, negative) {
+    if (positive > negative) return "Positiva";
+    if (negative > positive) return "Negativa";
+    return "Neutra";
+}
+
+function calculateConfidence(positive, negative) {
+    const total = positive + negative;
+    if (total === 0) return 60;
+
+    return Math.min(
+        90,
+        60 + Math.abs(positive - negative) * 10
+    );
+}
+
+function extractKeywords(words) {
+    return [...new Set(words)]
+        .filter(
+            word =>
+                word.length > 4 &&
+                !SENTIMENT_CONFIG.stopWords.includes(word)
+        )
+        .slice(0, 3)
+        .join(", ");
+}
+
+// ===============================
+// Exibição do resultado
+// ===============================
 function displayResult(data) {
     sentimentLabel.textContent = data.sentiment;
     confidenceValue.textContent = `${data.confidence}%`;
+    keywords.textContent = data.keywords;
 
+    updateSentimentStyle(data.sentiment);
+    updateConfidenceBar(data.confidence);
+    updateAnalysisDate();
+
+    result.classList.add("show");
+}
+
+function updateSentimentStyle(sentiment) {
     sentimentLabel.className = "sentiment-label";
 
-    if (data.sentiment === "Positiva") {
+    if (sentiment === "Positiva") {
         sentimentLabel.classList.add("sentiment-positive");
-    } else if (data.sentiment === "Negativa") {
+    } else if (sentiment === "Negativa") {
         sentimentLabel.classList.add("sentiment-negative");
     } else {
         sentimentLabel.classList.add("sentiment-neutral");
     }
+}
 
-    confidenceBar.style.width = `${data.confidence}%`;
+function updateConfidenceBar(confidence) {
     confidenceBar.className = "confidence-fill";
+    confidenceBar.style.width = `${confidence}%`;
 
-    if (data.confidence >= 80) {
+    if (confidence >= 80) {
         confidenceBar.classList.add("confidence-high");
-    } else if (data.confidence >= 65) {
+    } else if (confidence >= 65) {
         confidenceBar.classList.add("confidence-medium");
     } else {
         confidenceBar.classList.add("confidence-low");
     }
+}
 
-    keywords.textContent = data.keywords;
-
+function updateAnalysisDate() {
     const now = new Date();
     analysisDate.textContent =
         now.toLocaleDateString("pt-BR") +
@@ -152,11 +238,11 @@ function displayResult(data) {
             hour: "2-digit",
             minute: "2-digit"
         });
-
-    result.classList.add("show");
 }
 
-// Adicionar ao histórico
+// ===============================
+// Histórico
+// ===============================
 function addToHistory(text, data) {
     const analysis = {
         id: Date.now(),
@@ -171,21 +257,17 @@ function addToHistory(text, data) {
     };
 
     analysisHistory.unshift(analysis);
-
-    if (analysisHistory.length > 10) {
-        analysisHistory = analysisHistory.slice(0, 10);
-    }
+    analysisHistory = analysisHistory.slice(0, HISTORY_LIMIT);
 
     updateHistoryDisplay();
 }
 
-// Atualizar histórico
 function updateHistoryDisplay() {
     historyList.innerHTML = "";
 
     if (analysisHistory.length === 0) {
-        historyList.appendChild(emptyHistory);
         emptyHistory.style.display = "block";
+        historyList.appendChild(emptyHistory);
         return;
     }
 
@@ -195,9 +277,12 @@ function updateHistoryDisplay() {
         const historyItem = document.createElement("div");
         historyItem.className = "history-item";
 
-        let sentimentClass = "history-neutral";
-        if (item.sentiment === "Positiva") sentimentClass = "history-positive";
-        if (item.sentiment === "Negativa") sentimentClass = "history-negative";
+        const sentimentClass =
+            item.sentiment === "Positiva"
+                ? "history-positive"
+                : item.sentiment === "Negativa"
+                ? "history-negative"
+                : "history-neutral";
 
         historyItem.innerHTML = `
             <div class="history-text">${item.text}</div>
@@ -223,15 +308,10 @@ function updateHistoryDisplay() {
     });
 }
 
+// ===============================
 // Inicialização
+// ===============================
 window.addEventListener("DOMContentLoaded", () => {
     charCount.textContent = 0;
     updateHistoryDisplay();
-});
-
-// Atalho Ctrl+Enter / Cmd+Enter
-reviewInput.addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        classifyBtn.click();
-    }
 });
