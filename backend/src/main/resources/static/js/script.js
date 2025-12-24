@@ -18,34 +18,7 @@ const loading = document.getElementById("loading");
 // Configurações
 // ===============================
 const HISTORY_LIMIT = 10;
-
-const SENTIMENT_CONFIG = {
-    positive: [
-        "excelente",
-        "otimo",
-        "bom",
-        "recomendo",
-        "rapido",
-        "eficiente",
-        "maravilhoso",
-        "perfeito",
-        "adoro",
-        "gostei"
-    ],
-    negative: [
-        "ruim",
-        "pessimo",
-        "horrivel",
-        "lento",
-        "problema",
-        "defeito",
-        "decepcionado",
-        "terrivel",
-        "insatisfeito"
-    ],
-    negations: ["nao", "nunca", "jamais"],
-    stopWords: ["sobre", "muito", "quando", "porque"]
-};
+const API_URL = "http://localhost:8080/sentiment";
 
 // ===============================
 // Estado
@@ -56,15 +29,6 @@ let analysisHistory =
 // ===============================
 // Utilidades
 // ===============================
-
-// Normaliza texto (remove acentos)
-function normalizeText(text) {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-}
-
 function showLoading() {
     loading.classList.add("show");
     result.classList.remove("show");
@@ -79,6 +43,11 @@ function saveHistory() {
         "analysisHistory",
         JSON.stringify(analysisHistory)
     );
+}
+
+function capitalize(text) {
+    if(!text) return "";
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
 // ===============================
@@ -116,77 +85,42 @@ classifyBtn.addEventListener("click", () => {
 function startAnalysis(text) {
     showLoading();
 
-    setTimeout(() => {
-        const response = simulateClassification(text);
-        finishAnalysis(text, response);
-    }, 1200);
+    fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+            texto: text 
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(
+                "Erro ao processar sentimento");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const adaptedResponse = {
+            sentiment: capitalize(data.previsao),
+            confidence: Math.round(data.probabilidade * 100),
+            keywords: "Análise via IA"
+        };
+        finishAnalysis(text, adaptedResponse);
+    })
+    .catch(error => {
+        console.error(error);
+        alert("Erro ao conectar com o servidor.");
+        hideLoading();
+    });
 }
 
-function finishAnalysis(text, response) {
+    function finishAnalysis(text, response) {
     displayResult(response);
     addToHistory(text, response);
     saveHistory();
     hideLoading();
-}
-
-// ===============================
-// Classificação (3 categorias)
-// ===============================
-function simulateClassification(text) {
-    const words = normalizeText(text).split(/\W+/);
-
-    let positiveCount = 0;
-    let negativeCount = 0;
-
-    words.forEach((word, index) => {
-        const prevWord = words[index - 1];
-
-        if (
-            SENTIMENT_CONFIG.positive.includes(word) &&
-            !SENTIMENT_CONFIG.negations.includes(prevWord)
-        ) {
-            positiveCount++;
-        }
-
-        if (SENTIMENT_CONFIG.negative.includes(word)) {
-            negativeCount++;
-        }
-    });
-
-    return {
-        sentiment: getSentiment(positiveCount, negativeCount),
-        confidence: calculateConfidence(positiveCount, negativeCount),
-        keywords:
-            extractKeywords(words) ||
-            "Nenhuma palavra-chave identificada"
-    };
-}
-
-function getSentiment(positive, negative) {
-    if (positive > negative) return "Positiva";
-    if (negative > positive) return "Negativa";
-    return "Neutra";
-}
-
-function calculateConfidence(positive, negative) {
-    const total = positive + negative;
-    if (total === 0) return 60;
-
-    return Math.min(
-        90,
-        60 + Math.abs(positive - negative) * 10
-    );
-}
-
-function extractKeywords(words) {
-    return [...new Set(words)]
-        .filter(
-            word =>
-                word.length > 4 &&
-                !SENTIMENT_CONFIG.stopWords.includes(word)
-        )
-        .slice(0, 3)
-        .join(", ");
 }
 
 // ===============================
