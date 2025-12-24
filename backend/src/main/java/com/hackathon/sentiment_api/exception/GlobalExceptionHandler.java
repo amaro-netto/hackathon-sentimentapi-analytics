@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.ConnectException;
 import java.util.HashMap;
@@ -39,10 +40,17 @@ public class GlobalExceptionHandler {
     // CASO 3: Erro genérico (qualquer outra coisa que der errado)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericError(Exception ex) {
+        
+        if(ex instanceof NoResourceFoundException){
+            return null;
+        }
+        
         Map<String, String> error = new HashMap<>();
         error.put("erro", "Ocorreu um erro interno no servidor.");
         error.put("mensagem", ex.getMessage());
         
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(error);
     }
 }
