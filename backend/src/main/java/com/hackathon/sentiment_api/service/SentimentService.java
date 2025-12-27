@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import com.hackathon.sentiment_api.dto.SentimentHistoryResponse;
+import java.util.List;
 
 @Service
 public class SentimentService {
@@ -63,5 +65,19 @@ public class SentimentService {
     public SentimentResponse processarAnaliseInterna(SentimentRequest request) {
         log.info("🐍 Cache Miss! Chamando API Python para texto inédito: {}", request.text());
         return pythonClient.analisar(request);
+    }
+
+    // Histórico (NOVO MÉTODO)
+    public List<SentimentHistoryResponse> listarHistorico() {
+        return repository.findTop10ByOrderByDataHoraDesc()
+            .stream()
+            .map(log -> new SentimentHistoryResponse(
+                log.getId(),
+                log.getTexto(),
+                log.getPrevisao(),
+                log.getProbabilidade(),
+                log.getDataHora()
+            ))
+            .toList();
     }
 }

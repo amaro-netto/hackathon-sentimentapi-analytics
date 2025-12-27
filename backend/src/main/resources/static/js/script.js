@@ -177,6 +177,27 @@ function updateAnalysisDate() {
 // ===============================
 // Histórico
 // ===============================
+function loadHistoryFromBackend() {
+    fetch("http://localhost:8080/sentiment/history")
+        .then(res => res.json())
+        .then(data => {
+            analysisHistory = data.map(item => ({
+                id: item.id,
+                text: item.texto.length > 100
+                ? item.texto.substring(0,100) + "..."
+                : item.texto,
+                fullText: item.texto,
+                sentiment: item.previsao,
+                confidence: Math.round(item.probabilidade * 100),
+                date: new Date(item.dataHora).toLocaleString("pt-BR")
+            }));
+            updateHistoryDisplay();
+        })
+        .catch(err => {
+            console.error("Erro ao carregar histórico", err);
+        });
+}
+
 function addToHistory(text, data) {
     const analysis = {
         id: Date.now(),
@@ -247,5 +268,5 @@ function updateHistoryDisplay() {
 // ===============================
 window.addEventListener("DOMContentLoaded", () => {
     charCount.textContent = 0;
-    updateHistoryDisplay();
+    loadHistoryFromBackend();
 });
