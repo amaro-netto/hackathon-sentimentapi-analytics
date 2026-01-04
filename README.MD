@@ -19,12 +19,12 @@ API para classificação automática de sentimentos (Positivo/Negativo/Neutro) e
 
 #### ⚙️ **Tecnologias Utilizadas**
 * **Backend:** 
-* **Data Science:** 
+* **Data Science:** Python 3.11
 * **Build/Deploy:** 
 
 #### 📁 **Estrutura do Projeto**
 * `/backend` - Código fonte da API Java
-* `/data-science` - Notebooks e scripts de treinamento do modelo
+* `/data` - Notebooks e scripts de treinamento do modelo
 * `/docs` - Documentação complementar
 
 ---
