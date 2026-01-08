@@ -6,7 +6,7 @@ def test_api():
     
     # 1. Health check
     try:
-        resp = requests.get(f"{base_url}/")
+        resp = requests.get(f"{base_url}/health")
         print(f"Health Check: {resp.status_code}")
         print(f"Response: {resp.json()}")
     except Exception as e:
@@ -17,11 +17,14 @@ def test_api():
     try:
         data = {"texto": "Eu amei este produto, é fantástico!"}
         resp = requests.post(f"{base_url}/predict", json=data)
+        print(data)
         print(f"Predict (Positivo): {resp.status_code}")
         print(f"Response: {resp.json()}")
         
         data_neg = {"texto": "O produto é horrível, odiei."}
         resp = requests.post(f"{base_url}/predict", json=data_neg)
+
+        print(data_neg)
         print(f"Predict (Negativo): {resp.status_code}")
         print(f"Response: {resp.json()}")
     except Exception as e:
