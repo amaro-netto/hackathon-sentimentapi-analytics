@@ -78,7 +78,7 @@ def predict(request: SentimentRequest):
                 # Caso o modelo não suporte predict_proba (ex: alguns SVMs)
                 proba = 1.0
 
-            return {"previsao": str(prediction), "probabilidade": proba}
+            return {"previsao": str(prediction), "probabilidade": f"{proba*100:.2f}%"}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     else:
@@ -91,4 +91,4 @@ def predict(request: SentimentRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
