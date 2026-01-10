@@ -15,6 +15,7 @@ model_es = None
 # --- CONTRATO DE DADOS ---
 class SentimentRequest(BaseModel):
     texto: str
+    lang: str
 
 # --- LIFESPAN (Substitui o @app.on_event) ---
 @asynccontextmanager
@@ -65,30 +66,56 @@ def health_check():
 
 @app.post("/predict")
 def predict(request: SentimentRequest):
-    if model_pt:
-        try:
-            # 1. Faz a previsão
-            prediction = model_pt.predict([request.texto])[0]
-
-            # 2. Calcula probabilidade (Se o modelo suportar predict_proba)
+    if request.lang == "pt":
+        if model_pt:
             try:
-                probs = model_pt.predict_proba([request.texto])[0]
-                proba = float(max(probs))
-            except AttributeError:
-                # Caso o modelo não suporte predict_proba (ex: alguns SVMs)
-                proba = 1.0
+                # 1. Faz a previsão
+                prediction = model_pt.predict([request.texto])[0]
 
-            return {"previsao": str(prediction), "probabilidade": f"{proba*100:.2f}%"}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-    else:
-        # Modo Dummy
-        return {
-            "previsao": "Positivo (Simulado)",
-            "probabilidade": 0.0,
-            "debug": "Sem modelo carregado"
-        }
+                # 2. Calcula probabilidade (Se o modelo suportar predict_proba)
+                try:
+                    probs = model_pt.predict_proba([request.texto])[0]
+                    proba = float(max(probs))
+                except AttributeError:
+                    # Caso o modelo não suporte predict_proba (ex: alguns SVMs)
+                    proba = 1.0
+
+                return {"idioma": str(request.lang),"previsao": str(prediction), "probabilidade": f"{proba*100:.2f}%"}
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+        else:
+            # Modo Dummy
+            return {
+                "previsao": "Positivo (Simulado)",
+                "probabilidade": 0.0,
+                "debug": "Sem modelo carregado"
+            }
+    elif request.lang=='es':
+        if model_es:
+            try:
+                # 1. Faz a previsão
+                prediction = model_es.predict([request.texto])[0]
+
+                # 2. Calcula probabilidade (Se o modelo suportar predict_proba)
+                try:
+                    probs = model_es.predict_proba([request.texto])[0]
+                    proba = float(max(probs))
+                except AttributeError:
+                    # Caso o modelo não suporte predict_proba (ex: alguns SVMs)
+                    proba = 1.0
+
+                return {"idioma": str(request.lang),"previsao": str(prediction), "probabilidade": f"{proba * 100:.2f}%"}
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
+        else:
+            # Modo Dummy
+            return {
+                "previsao": "Positivo (Simulado)",
+                "probabilidade": 0.0,
+                "debug": "Sem modelo carregado"
+            }
+    return None
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000)
