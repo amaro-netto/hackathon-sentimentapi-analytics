@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="js/register.js" defer></script>
+</head>
+<body>
+
+    <div class="container">
+    
+        <header>
+            <h1><i class="fas fa-user-plus"></i>Sentiment API</h1>
+            <p class="subtitle">
+                Crie sua conta para acessar o sistema
+            </p>
+        </header>
+
+        <div class="main-content">
+            
+            <section class="input-section">
+                <h2 class="section-title">
+                    <i class="fas fa-id-card"></i> Dados do usuário
+                </h2>
+            
+            
+                <form id="registerForm">
+                    <input id="email" type="email" placeholder="E-mail" required>
+                    <input id="password" type="password" placeholder="Senha" required>
+        
+                    <select id="genero" required>
+                        <option value="">Gênero</option>
+                        <option>Masculino</option>
+                        <option>Feminino</option>
+                        <option>Outro</option>
+                        <option>Prefiro não dizer</option>
+                    </select>
+
+                    <select id="estadoUf" required>
+                        <option value="">Estado(UF)</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                    </select>
+
+                    <input id="idade" type="number" placeholder="Idade" min="13" max="120" required>
+                    
+                    <button class="btn" type="submit"><i class="fas fa-user-check"></i>Criar Conta</button>
+
+                    <p id="msg" class="form-msg"></p>
+
+
+                </form>
+
+            </section>
+
+        </div>
+
+        <footer>
+            <p>
+                Sistema de Classificação de Avaliações Sentiment API &copy;2026
+            </p>
+        </footer>
+    </div>
+
+</body>
+</html>
