@@ -21,14 +21,23 @@ const HISTORY_LIMIT = 10;
 const API_URL = "http://localhost:8080/sentiment";
 
 // ===============================
-// Estado
-// ===============================
-let analysisHistory =
-    JSON.parse(localStorage.getItem("analysisHistory")) || [];
-
-// ===============================
 // Utilidades
 // ===============================
+function getAuthHeaders() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Sessão expirada. Faça login novamente.");
+        window.location.href = "index.html";
+        throw new Error("Token não encontrado");
+    }
+
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
+}
+
 function showLoading() {
     loading.classList.add("show");
     result.classList.remove("show");
@@ -38,40 +47,29 @@ function hideLoading() {
     loading.classList.remove("show");
 }
 
-function saveHistory() {
-    localStorage.setItem(
-        "analysisHistory",
-        JSON.stringify(analysisHistory)
-    );
-}
-
 function capitalize(text) {
-    if(!text) return "";
+    if (!text) return "";
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
 // ===============================
 // Eventos
 // ===============================
-
-// Contador de caracteres
 reviewInput.addEventListener("input", () => {
     charCount.textContent = reviewInput.value.length;
 });
 
-// Atalho Ctrl+Enter / Cmd+Enter
 reviewInput.addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         classifyBtn.click();
     }
 });
 
-// Clique no botão de classificar
 classifyBtn.addEventListener("click", () => {
     const reviewText = reviewInput.value.trim();
 
     if (!reviewText) {
-        alert("Por favor, insira uma avaliação para classificar.");
+        alert("Por favor, insira uma avaliação.");
         reviewInput.focus();
         return;
     }
@@ -87,39 +85,32 @@ function startAnalysis(text) {
 
     fetch(API_URL, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ 
-            texto: text 
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ texto: text })
+    })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Erro ao processar sentimento");
+            }
+            return res.json();
         })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(
-                "Erro ao processar sentimento");
-        }
-        return response.json();
-    })
-    .then(data => {
-        const adaptedResponse = {
-            sentiment: capitalize(data.previsao),
-            confidence: Math.round(data.probabilidade * 100),
-            keywords: "Análise via IA"
-        };
-        finishAnalysis(text, adaptedResponse);
-    })
-    .catch(error => {
-        console.error(error);
-        alert("Erro ao conectar com o servidor.");
-        hideLoading();
-    });
+        .then(data => {
+            finishAnalysis(text, {
+                sentiment: capitalize(data.previsao),
+                confidence: Math.round(data.probabilidade * 100),
+                keywords: "Análise via IA"
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Erro ao conectar com o servidor.");
+            hideLoading();
+        });
 }
 
-    function finishAnalysis(text, response) {
+function finishAnalysis(text, response) {
     displayResult(response);
     addToHistory(text, response);
-    saveHistory();
     hideLoading();
 }
 
@@ -178,89 +169,26 @@ function updateAnalysisDate() {
 // Histórico
 // ===============================
 function loadHistoryFromBackend() {
-    fetch("http://localhost:8080/sentiment/history")
+    fetch("http://localhost:8080/sentiment/history", {
+        headers: getAuthHeaders()
+    })
         .then(res => res.json())
         .then(data => {
-            analysisHistory = data.map(item => ({
-                id: item.id,
-                text: item.texto.length > 100
-                ? item.texto.substring(0,100) + "..."
-                : item.texto,
-                fullText: item.texto,
-                sentiment: item.previsao,
-                confidence: Math.round(item.probabilidade * 100),
-                date: new Date(item.dataHora).toLocaleString("pt-BR")
-            }));
-            updateHistoryDisplay();
+            historyList.innerHTML = "";
+
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "history-item";
+                div.innerHTML = `
+                    <div class="history-text">${item.texto}</div>
+                    <div class="history-sentiment">${item.previsao}</div>
+                `;
+                historyList.appendChild(div);
+            });
         })
         .catch(err => {
             console.error("Erro ao carregar histórico", err);
         });
-}
-
-function addToHistory(text, data) {
-    const analysis = {
-        id: Date.now(),
-        text:
-            text.length > 100
-                ? text.substring(0, 100) + "..."
-                : text,
-        fullText: text,
-        sentiment: data.sentiment,
-        confidence: data.confidence,
-        date: new Date().toLocaleString("pt-BR")
-    };
-
-    analysisHistory.unshift(analysis);
-    analysisHistory = analysisHistory.slice(0, HISTORY_LIMIT);
-
-    updateHistoryDisplay();
-}
-
-function updateHistoryDisplay() {
-    historyList.innerHTML = "";
-
-    if (analysisHistory.length === 0) {
-        emptyHistory.style.display = "block";
-        historyList.appendChild(emptyHistory);
-        return;
-    }
-
-    emptyHistory.style.display = "none";
-
-    analysisHistory.forEach(item => {
-        const historyItem = document.createElement("div");
-        historyItem.className = "history-item";
-
-        const sentimentClass =
-            item.sentiment === "Positiva"
-                ? "history-positive"
-                : item.sentiment === "Negativa"
-                ? "history-negative"
-                : "history-neutral";
-
-        historyItem.innerHTML = `
-            <div class="history-text">${item.text}</div>
-            <div class="history-sentiment ${sentimentClass}">
-                ${item.sentiment}
-            </div>
-        `;
-
-        historyItem.addEventListener("click", () => {
-            reviewInput.value = item.fullText;
-            charCount.textContent = item.fullText.length;
-
-            displayResult({
-                sentiment: item.sentiment,
-                confidence: item.confidence,
-                keywords: "Recuperado do histórico"
-            });
-
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-
-        historyList.appendChild(historyItem);
-    });
 }
 
 // ===============================
