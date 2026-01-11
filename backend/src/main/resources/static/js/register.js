@@ -18,6 +18,12 @@ document.getElementById("registerForm")
         idade: Number(idade.value)
     };
 
+    if(!genero.value || !estadoUf.value){
+        msg.textContent = "Preencha todos os campos obrigatórios!";
+        msg.style.color = "red";
+        return;
+    }
+
     msg.textContent = "Cadastrando...";
     msg.style.color = "#333";
 
