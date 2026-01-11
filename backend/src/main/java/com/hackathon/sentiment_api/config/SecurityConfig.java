@@ -16,9 +16,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/",              //  LIBERADO: A raiz do site
                     "/index.html",    //  LIBERADO: O arquivo principal
-                    "/login.html",    // LIBERADO: Liberado para todos
+                    "/sentiment.html",    // LIBERADO: Liberado para todos
                     "/register.html", // PREVENÇÃO: Liberado para criar conta
-                    "/css/**",        // LIBERADO: Estilos ( pasta css)
+                    "/style/**",        // LIBERADO: Estilos ( pasta css)
                     "/js/**",         //  LIBERADO: Scripts ( pasta js)
                     "/images/**",     //  LIBERADO: Imagens
                     "/auth/**",       // Login e Registro
