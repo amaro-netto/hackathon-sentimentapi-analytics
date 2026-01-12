@@ -4,12 +4,15 @@
 const reviewInput = document.getElementById("reviewInput");
 const classifyBtn = document.getElementById("classifyBtn");
 const charCount = document.getElementById("charCount");
+const langSelect = document.getElementById("lang");
+
 const result = document.getElementById("result");
 const sentimentLabel = document.getElementById("sentimentLabel");
 const confidenceValue = document.getElementById("confidenceValue");
 const confidenceBar = document.getElementById("confidenceBar");
 const keywords = document.getElementById("keywords");
 const analysisDate = document.getElementById("analysisDate");
+
 const historyList = document.getElementById("historyList");
 const emptyHistory = document.getElementById("emptyHistory");
 const loading = document.getElementById("loading");
@@ -67,6 +70,7 @@ reviewInput.addEventListener("keydown", e => {
 
 classifyBtn.addEventListener("click", () => {
     const reviewText = reviewInput.value.trim();
+    const lang = langSelect.value;
 
     if (!reviewText) {
         alert("Por favor, insira uma avaliação.");
@@ -74,19 +78,28 @@ classifyBtn.addEventListener("click", () => {
         return;
     }
 
-    startAnalysis(reviewText);
+    if (!lang) {
+        alert("Por favor, selecione o idioma da avaliação.");
+        langSelect.focus();
+        return;
+    }
+
+    startAnalysis(reviewText, lang);
 });
 
 // ===============================
 // Fluxo principal
 // ===============================
-function startAnalysis(text) {
+function startAnalysis(text, lang) {
     showLoading();
 
     fetch(API_URL, {
         method: "POST",
         headers: getAuthHeaders(),
-        body: JSON.stringify({ texto: text })
+        body: JSON.stringify({ 
+            texto: text,
+            lang: lang 
+        })
     })
         .then(res => {
             if (!res.ok) {
@@ -175,6 +188,13 @@ function loadHistoryFromBackend() {
         .then(res => res.json())
         .then(data => {
             historyList.innerHTML = "";
+
+            if(!data.length){
+                emptyHistory.style.display = "block";
+                return;
+            }
+
+            emptyHistory.style.display = "none";
 
             data.forEach(item => {
                 const div = document.createElement("div");
