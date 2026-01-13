@@ -4,7 +4,6 @@
 const reviewInput = document.getElementById("reviewInput");
 const classifyBtn = document.getElementById("classifyBtn");
 const charCount = document.getElementById("charCount");
-const langSelect = document.getElementById("lang");
 
 const result = document.getElementById("result");
 const sentimentLabel = document.getElementById("sentimentLabel");
@@ -70,7 +69,7 @@ reviewInput.addEventListener("keydown", e => {
 
 classifyBtn.addEventListener("click", () => {
     const reviewText = reviewInput.value.trim();
-    const lang = langSelect.value;
+    
 
     if (!reviewText) {
         alert("Por favor, insira uma avaliação.");
@@ -78,19 +77,13 @@ classifyBtn.addEventListener("click", () => {
         return;
     }
 
-    if (!lang) {
-        alert("Por favor, selecione o idioma da avaliação.");
-        langSelect.focus();
-        return;
-    }
-
-    startAnalysis(reviewText, lang);
+    startAnalysis(reviewText);
 });
 
 // ===============================
 // Fluxo principal
 // ===============================
-function startAnalysis(text, lang) {
+function startAnalysis(text) {
     showLoading();
 
     fetch(API_URL, {
@@ -98,7 +91,7 @@ function startAnalysis(text, lang) {
         headers: getAuthHeaders(),
         body: JSON.stringify({ 
             texto: text,
-            lang: lang 
+            lang: "pt"
         })
     })
         .then(res => {
