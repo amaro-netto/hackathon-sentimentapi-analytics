@@ -14,15 +14,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/",              //  LIBERADO: A raiz do site
-                    "/index.html",    //  LIBERADO: O arquivo principal
+                    "/",   //  LIBERADO: A raiz do site (Login/Landing)
+                    "/index.html",    //  LIBERADO: O arquivo principal (Login/Landing)
                     "/sentiment.html",    // LIBERADO: Liberado para todos
                     "/register.html", // PREVENÇÃO: Liberado para criar conta
                     "/style/**",        // LIBERADO: Estilos ( pasta css)
                     "/js/**",         //  LIBERADO: Scripts ( pasta js)
                     "/images/**",     //  LIBERADO: Imagens
-                    "/auth/**",       // Login e Registro
-                    "/h2-console/**",
+                    "/auth/**",       // API de Login e Registro
+                    "/h2-console/**", // Banco de dados (Dev)
+                    "/error",         // Prevenção de erros
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
