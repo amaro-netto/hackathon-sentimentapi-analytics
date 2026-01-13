@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import os
-from contextlib import asynccontextmanager  # <--- Import necessário
+from contextlib import asynccontextmanager
 
 # --- Carregamento dos Modelos e Variaveis Globais ---
 MODEL_PATH_MULTI = "../models/modelo_multi.joblib"
@@ -49,9 +49,7 @@ def health_check():
 
 @app.post("/predict")
 def predict(request: SentimentRequest):
-   
-    # --- BLOCO AUTO-DETECT (MULTI) ---
-    # CORREÇÃO: Este elif foi trazido para fora, alinhado com o 'if' principal
+
     if model_multi:
         try:
             pred = model_multi.predict([request.texto])[0]
