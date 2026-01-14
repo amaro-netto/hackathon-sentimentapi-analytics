@@ -17,50 +17,15 @@ def test_api():
 
     positivos_pt = ["Eu amei este produto, é fantástico!", "Perfeito. Funciona muito bem e entrega rápida.",
                     "Muito bonito e ótimo preço."]
-    negativos_pt = ["O produto é horrível. Odiei", "Muito ruim. Veio quebrado e atrasado", "Péssima qualidade e caro demais"]
+    negativos_pt = ["O produto é horrível. Odiei", "Muito ruim. Veio quebrado e atrasado",
+                    "Péssima qualidade e caro demais"]
     neutros_pt = ["Mais ou menos", "Nada demais. Cumpre o que promete e só", "Razoável. Faz o mínimo pelo preço."]
-    try:
-        for texto in positivos_pt:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"pt", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
-        
-        for texto in negativos_pt:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"pt", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
 
-        for texto in neutros_pt:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"pt", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
-
-    except Exception as e:
-        print(f"Predict failed: {e}")
-        sys.exit(1)
-
-    positivos_es = ["¡Me encantó este producto, es fantástico!", "Perfecto. Funciona muy bien y la entrega fue rápida.", "Muy bonito y a un precio excelente."]
+    positivos_es = ["¡Me encantó este producto, es fantástico!", "Perfecto. Funciona muy bien y la entrega fue rápida.",
+                    "Muy bonito y a un precio excelente."]
     negativos_es = ["El producto es pésimo. Lo odié", "Muy malo. Llegó roto y tarde", "Pésima calidad y demasiado caro"]
-    neutros_es = ["Regular", "Nada del otro mundo. Cumple lo que promete y punto", "Regular. Cumple con lo mínimo por el precio"]
-    try:
-        for texto in positivos_es:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"es", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
-
-        for texto in negativos_es:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"es", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
-
-        for texto in neutros_es:
-            resp = requests.post(f"{base_url}/predict", json={"lang":"es", "texto": texto})
-            print(texto)
-            print(f"Response: {resp.json()}\n")
-
-    except Exception as e:
-        print(f"Predict failed: {e}")
-        sys.exit(1)
+    neutros_es = ["Regular", "Nada del otro mundo. Cumple lo que promete y punto",
+                  "Regular. Cumple con lo mínimo por el precio"]
 
     try:
         for texto in positivos_pt + positivos_es:
