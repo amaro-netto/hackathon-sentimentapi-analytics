@@ -14,15 +14,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container at /code
-COPY requirements.txt .
+COPY requirements_app.txt .
 
 # Install any needed packages specified in requirements.txt
 # Using --no-cache-dir to keep image size down
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements_app.txt
 
 # Copy the current directory contents into the container at /code
-COPY app ./app
-COPY models ./models
+COPY app/app_v2.py ./app/
+COPY models/modelo_multi.joblib ./models/
 
 # Set the working directory to where the app is
 WORKDIR /code/app
