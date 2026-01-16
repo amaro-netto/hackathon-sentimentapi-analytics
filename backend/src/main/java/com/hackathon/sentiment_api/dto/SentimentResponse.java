@@ -14,5 +14,13 @@ public record SentimentResponse(
 
     // O Python manda "prob_sentimento", mas nós chamamos de "probabilidade"
     @JsonAlias("prob_sentimento") 
-    Object probabilidade
+    Object probabilidade,
+
+    // O Python manda "idioma"
+    @JsonAlias("idioma")
+    String idioma,
+
+    // O Python manda "prob_idioma"
+    @JsonAlias("prob_idioma")
+    Object probIdioma
 ) {}

@@ -57,6 +57,21 @@ public class SentimentService {
             log.warn("⚠️ Conversão de probabilidade falhou, salvando 0.0");
         }
 
+        //Tratamento de Segurança para Probabilidade de Idioma
+        Double probIdiomaParaBanco = 0.0;
+        try {
+            Object pi = resposta.probIdioma();
+            if (pi instanceof Number) {
+                probIdiomaParaBanco = ((Number) pi).doubleValue();
+            } else if (pi instanceof String) {
+                String piStr = (String) pi;
+                piStr = piStr.replace("%", "").replace(",", ".");
+                probIdiomaParaBanco = Double.parseDouble(piStr);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Conversão de probabilidade de idioma falhou, salvando 0.0");
+        }
+
         // Descobre QUEM está logado (User Context) 
         User usuarioLogado = null;
         try {
@@ -73,17 +88,19 @@ public class SentimentService {
 
         // Salva no Banco com a assinatura do Usuário
         try {
-            //  Usando o Novo Construtor que aceita o USUÁRIO
+            //  Usando o Novo Construtor que aceita o USUÁRIO + idioma
             SentimentLog logBanco = new SentimentLog(
                 request.text(), 
                 resposta.previsao(), 
                 probParaBanco,
+                resposta.idioma(),
+                probIdiomaParaBanco,
                 usuarioLogado // <- Vincula o log ao usuário!
             );
             logRepository.save(logBanco);
             
             String nomeUsuario = (usuarioLogado != null) ? usuarioLogado.getEmail() : "Anônimo";
-            log.info("✅ Log salvo! ID: {} | Usuário: {}", logBanco.getId(), nomeUsuario);
+            log.info("✅ Log salvo! ID: {} | Usuário: {} | Idioma: {}", logBanco.getId(), nomeUsuario, resposta.idioma());
             
         } catch (Exception e) {
             log.error(" Erro ao salvar log no banco", e);
@@ -102,7 +119,8 @@ public class SentimentService {
         return logRepository.findTop10ByOrderByDataHoraDesc()
             .stream()
             .map(l -> new SentimentHistoryResponse(
-                l.getId(), l.getTexto(), l.getPrevisao(), l.getProbabilidade(), l.getDataHora()
+                l.getId(), l.getTexto(), l.getPrevisao(), l.getProbabilidade(), 
+                l.getIdioma(), l.getProbIdioma(), l.getDataHora()
             ))
             .toList();
     }

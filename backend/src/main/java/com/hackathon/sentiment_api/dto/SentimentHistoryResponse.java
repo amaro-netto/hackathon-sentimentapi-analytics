@@ -6,5 +6,7 @@ public record SentimentHistoryResponse(Long id,
     String texto,
     String previsao,
     Double probabilidade,
+    String idioma,
+    Double probIdioma,
     LocalDateTime createdAt
 ) {}
