@@ -40,7 +40,7 @@ class SentimentServiceTest {
     void deveAnalisarSalvarComSucesso() {
         // Cenário
         SentimentRequest request = new SentimentRequest("Teste");
-        SentimentResponse response = new SentimentResponse("Positivo", 0.99);
+        SentimentResponse response = new SentimentResponse("Positivo",0.85,"pt", 1.0);
 
         when(pythonClient.analisar(any())).thenReturn(response);
 
@@ -55,7 +55,7 @@ class SentimentServiceTest {
     void deveContinuarSeBancoFalhar() {
         // Cenário
         SentimentRequest request = new SentimentRequest("Teste Banco Ruim");
-        SentimentResponse response = new SentimentResponse("Neutro", 0.5);
+        SentimentResponse response = new SentimentResponse("Negativo", 0.15,"es",0.88);
 
         when(pythonClient.analisar(any())).thenReturn(response);
         // Simula erro no banco
