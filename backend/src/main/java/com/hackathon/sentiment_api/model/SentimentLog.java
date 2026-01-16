@@ -1,12 +1,16 @@
 package com.hackathon.sentiment_api.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Getter            
+@Setter             
+@NoArgsConstructor  
 public class SentimentLog {
 
     @Id
@@ -18,21 +22,22 @@ public class SentimentLog {
     private Double probabilidade;
     private LocalDateTime dataHora;
 
-    // Construtor vazio (obrigatório para o JPA)
-    public SentimentLog() {}
+    // --- NOVIDADE: A ligação com o Usuário ---
+    @ManyToOne
+    @JoinColumn(name = "user_id") // Cria uma coluna 'user_id' no banco para guardar o ID do dono
+    private User user;
 
-    // Construtor utilitário
-    public SentimentLog(String texto, String previsao, Double probabilidade) {
+    // Construtor Completo ( usuário logado)
+    public SentimentLog(String texto, String previsao, Double probabilidade, User user) {
         this.texto = texto;
         this.previsao = previsao;
         this.probabilidade = probabilidade;
+        this.user = user;
         this.dataHora = LocalDateTime.now();
     }
-
-    // Getters
-    public Long getId() { return id; }
-    public String getTexto() { return texto; }
-    public String getPrevisao() { return previsao; }
-    public Double getProbabilidade() { return probabilidade; }
-    public LocalDateTime getDataHora() { return dataHora; }
+    
+    // Construtor Simples (chame sem usuário)
+    public SentimentLog(String texto, String previsao, Double probabilidade) {
+        this(texto, previsao, probabilidade, null);
+    }
 }

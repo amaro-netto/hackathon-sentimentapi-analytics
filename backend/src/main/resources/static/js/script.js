@@ -27,13 +27,11 @@ const API_URL = "http://localhost:8080/sentiment";
 // ===============================
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
-
-    if (!token) {
+    if (!token || token === "undefined" || token === "null") {
         alert("Sessão expirada. Faça login novamente.");
-        window.location.href = "index.html";
+        window.location.href = "login.html";
         throw new Error("Token não encontrado");
     }
-
     return {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
@@ -41,12 +39,12 @@ function getAuthHeaders() {
 }
 
 function showLoading() {
-    loading.classList.add("show");
-    result.classList.remove("show");
+    if(loading) loading.classList.add("show");
+    if(result) result.classList.remove("show");
 }
 
 function hideLoading() {
-    loading.classList.remove("show");
+    if(loading) loading.classList.remove("show");
 }
 
 function capitalize(text) {
@@ -57,90 +55,107 @@ function capitalize(text) {
 // ===============================
 // Eventos
 // ===============================
-reviewInput.addEventListener("input", () => {
-    charCount.textContent = reviewInput.value.length;
-});
+if (reviewInput) {
+    reviewInput.addEventListener("input", () => {
+        charCount.textContent = reviewInput.value.length;
+    });
+    reviewInput.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            classifyBtn.click();
+        }
+    });
+}
 
-reviewInput.addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        classifyBtn.click();
-    }
-});
-
-classifyBtn.addEventListener("click", () => {
-    const reviewText = reviewInput.value.trim();
-    
-
-    if (!reviewText) {
-        alert("Por favor, insira uma avaliação.");
-        reviewInput.focus();
-        return;
-    }
-
-    startAnalysis(reviewText);
-});
+if (classifyBtn) {
+    classifyBtn.addEventListener("click", () => {
+        const reviewText = reviewInput.value.trim();
+        if (!reviewText) {
+            alert("Por favor, insira uma avaliação.");
+            reviewInput.focus();
+            return;
+        }
+        startAnalysis(reviewText);
+    });
+}
 
 // ===============================
 // Fluxo principal
 // ===============================
-function startAnalysis(text) {
+async function startAnalysis(text) {
     showLoading();
 
-    fetch(API_URL, {
-        method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ 
-            texto: text,
-            lang: "pt"
-        })
-    })
-        .then(res => {
-            if (!res.ok) {
-                throw new Error("Erro ao processar sentimento");
-            }
-            return res.json();
-        })
-        .then(data => {
-            finishAnalysis(text, {
-                sentiment: capitalize(data.previsao),
-                confidence: Math.round(data.probabilidade * 100),
-                keywords: "Análise via IA"
-            });
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Erro ao conectar com o servidor.");
-            hideLoading();
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ 
+                texto: text // IMPORTANTE: Java espera "texto"
+            })
         });
+
+        if (response.status === 403) throw new Error("Sessão expirada! Faça login novamente.");
+        if (!response.ok) throw new Error("Erro ao processar (Status " + response.status + ")");
+
+        const data = await response.json();
+
+        // CORREÇÃO DO NaN 
+        // O Java manda "93.06%". Removemos o % e transformamos em número.
+        let probNumerica = 0;
+        if (typeof data.probabilidade === 'string') {
+            probNumerica = parseFloat(data.probabilidade.replace("%", "").replace(",", "."));
+        } else {
+            probNumerica = data.probabilidade * 100; // Caso venha decimal (0.93)
+        }
+
+        finishAnalysis(text, {
+            sentiment: capitalize(data.previsao || "Neutro"),
+            confidence: Math.round(probNumerica), // Arredonda para inteiro (93)
+            keywords: "Análise via IA"
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+        if (err.message.includes("Sessão expirada")) {
+            window.location.href = "login.html";
+        }
+    } finally {
+        hideLoading();
+    }
 }
 
 function finishAnalysis(text, response) {
     displayResult(response);
     addToHistory(text, response);
-    hideLoading();
 }
 
 // ===============================
 // Exibição do resultado
 // ===============================
 function displayResult(data) {
+    if(!sentimentLabel) return;
+    
     sentimentLabel.textContent = data.sentiment;
     confidenceValue.textContent = `${data.confidence}%`;
-    keywords.textContent = data.keywords;
+    
+    if(keywords) keywords.textContent = data.keywords;
 
     updateSentimentStyle(data.sentiment);
     updateConfidenceBar(data.confidence);
     updateAnalysisDate();
 
-    result.classList.add("show");
+    if(result) result.classList.add("show");
 }
 
 function updateSentimentStyle(sentiment) {
+    if(!sentimentLabel) return;
     sentimentLabel.className = "sentiment-label";
 
-    if (sentiment === "Positiva") {
+    // Ajuste para bater com o retorno do Python (Positiva/Negativa ou Positivo/Negativo)
+    const s = sentiment.toLowerCase();
+    if (s.includes("positiv")) {
         sentimentLabel.classList.add("sentiment-positive");
-    } else if (sentiment === "Negativa") {
+    } else if (s.includes("negativ")) {
         sentimentLabel.classList.add("sentiment-negative");
     } else {
         sentimentLabel.classList.add("sentiment-neutral");
@@ -148,6 +163,7 @@ function updateSentimentStyle(sentiment) {
 }
 
 function updateConfidenceBar(confidence) {
+    if(!confidenceBar) return;
     confidenceBar.className = "confidence-fill";
     confidenceBar.style.width = `${confidence}%`;
 
@@ -161,53 +177,90 @@ function updateConfidenceBar(confidence) {
 }
 
 function updateAnalysisDate() {
+    if(!analysisDate) return;
     const now = new Date();
-    analysisDate.textContent =
-        now.toLocaleDateString("pt-BR") +
-        " " +
-        now.toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit"
-        });
+    analysisDate.textContent = now.toLocaleDateString("pt-BR") + " " + now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ===============================
 // Histórico
 // ===============================
 function loadHistoryFromBackend() {
+    const token = localStorage.getItem("token");
+    if(!token) return; // Não tenta carregar se não tiver token
+
     fetch("http://localhost:8080/sentiment/history", {
         headers: getAuthHeaders()
     })
-        .then(res => res.json())
-        .then(data => {
-            historyList.innerHTML = "";
+    .then(res => {
+        if(res.status === 403) return [];
+        return res.json();
+    })
+    .then(data => {
+        if (!historyList) return;
+        historyList.innerHTML = "";
 
-            if(!data.length){
-                emptyHistory.style.display = "block";
-                return;
+        if (!data || data.length === 0) {
+            if(emptyHistory) emptyHistory.style.display = "block";
+            return;
+        }
+
+        if(emptyHistory) emptyHistory.style.display = "none";
+
+        data.forEach(item => {
+            // Tratamento do histórico também!
+            let probHist = 0;
+            if (typeof item.probabilidade === 'string') {
+                probHist = parseFloat(item.probabilidade.replace("%", "").replace(",", "."));
+            } else {
+                probHist = item.probabilidade * 100;
             }
 
-            emptyHistory.style.display = "none";
-
-            data.forEach(item => {
-                const div = document.createElement("div");
-                div.className = "history-item";
-                div.innerHTML = `
-                    <div class="history-text">${item.texto}</div>
-                    <div class="history-sentiment">${item.previsao}</div>
-                `;
-                historyList.appendChild(div);
+            addToHistoryVisualOnly(item.texto, {
+                sentiment: capitalize(item.previsao || "Neutro"),
+                confidence: Math.round(probHist)
             });
-        })
-        .catch(err => {
-            console.error("Erro ao carregar histórico", err);
         });
+    })
+    .catch(err => console.error("Erro histórico", err));
+}
+
+function addToHistory(text, data) {
+    addToHistoryVisualOnly(text, data);
+    if(emptyHistory) emptyHistory.style.display = "none";
+}
+
+function addToHistoryVisualOnly(text, data) {
+    if(!historyList) return;
+
+    const div = document.createElement("div");
+    div.className = "history-item";
+    
+    let sentimentClass = "sentiment-neutral";
+    const s = data.sentiment.toLowerCase();
+    if (s.includes("positiv")) sentimentClass = "sentiment-positive";
+    if (s.includes("negativ")) sentimentClass = "sentiment-negative";
+
+    div.innerHTML = `
+        <div class="history-text">${text}</div>
+        <div class="history-sentiment ${sentimentClass}">
+            ${data.sentiment} (${data.confidence}%)
+        </div>
+    `;
+    
+    historyList.prepend(div);
+    if (historyList.children.length > HISTORY_LIMIT) {
+        historyList.removeChild(historyList.lastChild);
+    }
 }
 
 // ===============================
 // Inicialização
 // ===============================
 window.addEventListener("DOMContentLoaded", () => {
-    charCount.textContent = 0;
-    loadHistoryFromBackend();
+    if (charCount) charCount.textContent = 0;
+    const token = localStorage.getItem("token");
+    if (token) {
+        loadHistoryFromBackend();
+    }
 });

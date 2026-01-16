@@ -1,17 +1,21 @@
 package com.hackathon.sentiment_api.service;
 
 import com.hackathon.sentiment_api.client.PythonClient;
+import com.hackathon.sentiment_api.dto.SentimentHistoryResponse;
 import com.hackathon.sentiment_api.dto.SentimentRequest;
 import com.hackathon.sentiment_api.dto.SentimentResponse;
 import com.hackathon.sentiment_api.model.SentimentLog;
+import com.hackathon.sentiment_api.model.User;
 import com.hackathon.sentiment_api.repository.SentimentLogRepository;
+import com.hackathon.sentiment_api.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import com.hackathon.sentiment_api.dto.SentimentHistoryResponse;
+
 import java.util.List;
 
 @Service
@@ -23,60 +27,82 @@ public class SentimentService {
     private PythonClient pythonClient;
 
     @Autowired
-    private SentimentLogRepository repository;
+    private SentimentLogRepository logRepository;
+    
+    @Autowired
+    private UserRepository userRepository; // FERRAMENTA NOVA -> Para achar o dono do log
 
     @Autowired
-    @Lazy // Permite que a classe chame seus próprios métodos cacheados
+    @Lazy
     private SentimentService self;
 
-    /**
-     * MÉTODO PÚBLICO (SEM CACHE)
-     * Este é o método que o Controller chama.
-     * Ele garante que o log seja salvo no banco SEMPRE (mesmo se vier do cache).
-     */
     public SentimentResponse analisarSentimento(SentimentRequest request) {
         
-        // 1. Tenta pegar a resposta (Do Cache ou do Python)
-        // Usamos 'self' para o Spring interceptar a chamada e checar o cache
+        //Processa (Chama o Python ou pega do Cache)
         SentimentResponse resposta = self.processarAnaliseInterna(request);
 
-        // 2. Salva no Banco (Isso roda TODA VEZ, garantindo auditoria)
+        //Tratamento de Segurança para Probabilidade (Evita erro se vier texto do Python)
+        Double probParaBanco = 0.0;
         try {
+            Object p = resposta.probabilidade();
+            if (p instanceof Number) {
+                probParaBanco = ((Number) p).doubleValue();
+            } else if (p instanceof String) {
+                // Se vier "99.9%" ou "0,99" como texto, nós limpamos
+                String pStr = (String) p;
+                pStr = pStr.replace("%", "").replace(",", ".");
+                probParaBanco = Double.parseDouble(pStr);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Conversão de probabilidade falhou, salvando 0.0");
+        }
+
+        // Descobre QUEM está logado (User Context) 
+        User usuarioLogado = null;
+        try {
+            // Pergunta para a Segurança "Quem é que está com o token?"
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            
+            // Só busca no banco se não for usuário anônimo
+            if (email != null && !email.equals("anonymousUser")) {
+                usuarioLogado = userRepository.findByEmail(email).orElse(null);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Não foi possível identificar o usuário (acesso sem token?)");
+        }
+
+        // Salva no Banco com a assinatura do Usuário
+        try {
+            //  Usando o Novo Construtor que aceita o USUÁRIO
             SentimentLog logBanco = new SentimentLog(
                 request.text(), 
                 resposta.previsao(), 
-                resposta.probabilidade()
+                probParaBanco,
+                usuarioLogado // <- Vincula o log ao usuário!
             );
-            repository.save(logBanco);
-            // Logamos o ID para você ver no console que gravou
-            log.info("✅ Log salvo no banco! ID: {}", logBanco.getId());
+            logRepository.save(logBanco);
+            
+            String nomeUsuario = (usuarioLogado != null) ? usuarioLogado.getEmail() : "Anônimo";
+            log.info("✅ Log salvo! ID: {} | Usuário: {}", logBanco.getId(), nomeUsuario);
+            
         } catch (Exception e) {
-            log.error("Erro ao salvar log no banco", e);
+            log.error(" Erro ao salvar log no banco", e);
         }
 
         return resposta;
     }
 
-    /**
-     * MÉTODO INTERNO (COM CACHE)
-     * O Spring só executa este método se o texto não estiver na memória.
-     */
     @Cacheable(value = "sentimentos", key = "#request.text()")
     public SentimentResponse processarAnaliseInterna(SentimentRequest request) {
-        log.info("🐍 Cache Miss! Chamando API Python para texto inédito: {}", request.text());
+        log.info(" Cache Miss! Chamando Python para: {}", request.text());
         return pythonClient.analisar(request);
     }
 
-    // Histórico (NOVO MÉTODO)
     public List<SentimentHistoryResponse> listarHistorico() {
-        return repository.findTop10ByOrderByDataHoraDesc()
+        return logRepository.findTop10ByOrderByDataHoraDesc()
             .stream()
-            .map(log -> new SentimentHistoryResponse(
-                log.getId(),
-                log.getTexto(),
-                log.getPrevisao(),
-                log.getProbabilidade(),
-                log.getDataHora()
+            .map(l -> new SentimentHistoryResponse(
+                l.getId(), l.getTexto(), l.getPrevisao(), l.getProbabilidade(), l.getDataHora()
             ))
             .toList();
     }

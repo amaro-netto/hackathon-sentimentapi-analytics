@@ -6,7 +6,9 @@ import os
 from contextlib import asynccontextmanager
 
 # --- Carregamento dos Modelos e Variaveis Globais ---
-MODEL_PATH_MULTI = "../models/modelo_multi.joblib"
+# Usar caminho absoluto baseado no diretório do script
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH_MULTI = os.path.join(CURRENT_DIR, "..", "models", "modelo_multi.joblib")
 model_multi = None
 
 # --- CONTRATO DE DADOS ---
