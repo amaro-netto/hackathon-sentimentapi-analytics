@@ -1,140 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Sistema de Classificação de Avaliações</title>
-        <link rel="stylesheet" href="../assets/css/style.css" type="text/css" media="all" />
-        <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-        <script src="../assets/js/script.js" defer></script>
-    </head>
-    <body>
-        <div class="container">
-            <header>
-                <h1>
-                    <i class="fas fa-comment-dots"></i> Sentiment API
-                </h1>
-                <p class="subtitle">
-                    Insira uma avaliação de usuário e o sistema classificará
-                    automaticamente seu sentimento
-                </p>
-            </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Sentimento | InsightSent</title>
+    
+    <link rel="stylesheet" href="../assets/css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="../assets/js/auth-guard.js"></script>
+    <script src="../assets/js/layout.js" defer></script>
+    <script src="../assets/js/script.js" defer></script>
+</head>
+<body id="sentimentInterface">
 
-            <div class="main-content">
-                <section class="input-section">
-                    <h2 class="section-title">
-                        <i class="fas fa-edit"></i> Nova Avaliação
-                    </h2>
-                    <div class="char-count">
-                        <span id="charCount">0</span> caracteres
+    <div id="app-header-placeholder"></div>
+
+    <div class="main-wrapper">
+        
+        <div class="sentiment-dashboard-grid">
+            
+            <div class="left-column">
+                
+                <div class="white-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-edit"></i> Nova Análise</h2>
+                        <span id="charCount" class="char-counter">0 caracteres</span>
                     </div>
-                    <textarea
-                        id="reviewInput"
-                        placeholder="Digite a avaliação do usuário aqui... Exemplo: 'Produto excelente, entrega rápida e atendimento impecável. Recomendo totalmente!'" maxlength="500"
-                    ></textarea>
-
-                   
-                     <button id="classifyBtn" class="btn">
-                        <i class="fas fa-robot"></i> Classificar Avaliação
-                    </button>
-
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p>Analisando avaliação...</p>
+                    
+                    <textarea id="reviewInput" placeholder="Digite a avaliação do cliente aqui..."></textarea>
+                    
+                    <div class="action-area">
+                        <button id="classifyBtn" class="btn-primary">
+                            Analisar Agora <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
 
-                    <div class="classification-result" id="result">
+                    <div id="loading" class="loading-overlay">
+                        <i class="fas fa-circle-notch fa-spin"></i> Analisando...
+                    </div>
+
+                    <div id="result" class="result-container">
+                        
                         <div class="result-header">
-                            <span class="sentiment-label" id="sentimentLabel"
-                                >Positiva</span
-                            >
-                            <span id="confidenceValue">95%</span>
-                        </div>
-                        <div class="confidence-level">
-                            <span>Confiança do Sentimento:</span>
-                            <div class="confidence-bar">
-                                <div
-                                    class="confidence-fill confidence-high"
-                                    id="confidenceBar"
-                                ></div>
+                            <div>
+                                <span class="result-label">SENTIMENTO DETECTADO:</span>
+                                <h3 id="sentimentLabel">Aguardando...</h3>
+                            </div>
+                            <div class="confidence-badge">
+                                <i class="fas fa-bullseye"></i> <span id="confidenceValue">--%</span>
                             </div>
                         </div>
-                        <div class="language-level">
-                            <span>Idioma: <strong id="languageLabel">Português</strong></span>
-                            <span id="languageConfidenceValue">98%</span>
-                            <div class="confidence-bar">
-                                <div
-                                    class="confidence-fill confidence-high"
-                                    id="languageConfidenceBar"
-                                ></div>
-                            </div>
-                        </div>
-                        <div class="details">
-                            <div class="detail-item">
-                                <span>Palavras-chave:</span>
-                                <span id="keywords"
-                                    >excelente, rápido, recomendo</span
-                                >
-                            </div>
-                            <div class="detail-item">
-                                <span>Data:</span>
-                                <span id="analysisDate">20/10/2023 14:30</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
 
-                <section class="results-section">
-                    <h2 class="section-title">
-                        <i class="fas fa-history"></i> Histórico de Análises
-                    </h2>
-                    <div class="history-list" id="historyList">
-                        <!-- Itens de histórico serão adicionados aqui via JavaScript -->
-                        <div class="empty-history" id="emptyHistory">
-                            <i class="fas fa-inbox"></i>
-                            <p>Nenhuma análise realizada ainda</p>
+                        <div class="progress-container">
+                            <div class="progress-bar-bg">
+                                <div id="confidenceBar" class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <hr class="divider-light">
+
+                        <div class="meta-info-row">
+                            <div class="meta-item-box">
+                                <i class="fas fa-globe"></i> 
+                                <span>Idioma: <strong id="languageLabel">--</strong></span>
+                            </div>
+                            <div class="meta-item-box">
+                                <i class="fas fa-percentage"></i>
+                                <span>Certeza: <strong id="languageProb">--%</strong></span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container small">
+                            <div class="progress-bar-bg">
+                                <div id="langConfidenceBar" class="progress-bar-fill blue" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div class="date-footer">
+                            <i class="far fa-clock"></i> <span id="analysisDate">--:--</span>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
 
-            <section class="history-section">
-                <h2 class="section-title">
-                    <i class="fas fa-info-circle"></i> Como Funciona
-                </h2>
-                <p>
-                    Este sistema classifica avaliações de usuários em três
-                    categorias principais:
-                </p>
-                <ul style="margin-top: 10px; padding-left: 20px">
-                    <li>
-                        <strong>Positiva</strong>: Avaliações com tom favorável,
-                        elogios e recomendações.
-                    </li>
-                    <li>
-                        <strong>Negativa</strong>: Avaliações com críticas,
-                        insatisfação e reclamações.
-                    </li>
-                    <li>
-                        <strong>Neutra</strong>: Avaliações factuais, sem forte
-                        tom positivo ou negativo.
-                    </li>
-                </ul>
-                <p style="margin-top: 15px">
-                    O sistema analisa o texto utilizando processamento de
-                    linguagem natural para determinar o sentimento e a confiança
-                    da classificação.
-                </p>
-            </section>
+            <div class="right-column">
+                <div class="white-card full-height">
+                    <h3><i class="fas fa-history"></i> Histórico Recente</h3>
+                    <div id="historyList" class="history-list-styled">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>Histórico vazio.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <footer>
-                <p>
-                    Sistema de Classificação de Avaliações Sentiment API &copy; 2026
-                </p>
-            </footer>
         </div>
-    </body>
+
+        <div class="white-card info-card-full">
+            <h3><i class="fas fa-info-circle"></i> Como Funciona</h3>
+            <p>O sistema analisa o texto e determina o sentimento com base em palavras-chave, contexto e padrões linguísticos.</p>
+            <p>Este sistema classifica avaliações de usuários em três categorias principais:</p>
+            <div class="info-grid">
+                <div class="info-item positive">
+                    <i class="fas fa-smile"></i> <strong>Positivo</strong>
+                    <p>Elogios, satisfação e recomendações.</p>
+                </div>
+                <div class="info-item negative">
+                    <i class="fas fa-frown"></i> <strong>Negativo</strong>
+                    <p>Críticas, problemas e devoluções.</p>
+                </div>
+                <div class="info-item neutral">
+                    <i class="fas fa-meh"></i> <strong>Neutro</strong>
+                    <p>Dúvidas ou descrições técnicas.</p>
+                </div>
+            </div>
+        </div>
+        <div id="app-footer-placeholder"></div>
+    </div>
+
+</body>
 </html>

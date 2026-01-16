@@ -1,13 +1,7 @@
 package com.hackathon.sentiment_api.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*; // Puxa todas as anotações do JPA (@Entity, @Table, etc)
+import lombok.*; // Puxa todas as anotações do Lombok (@Data, @NoArgs, etc)
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,9 +10,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+@Data // O @Data JÁ INCLUI @Getter e @Setter, então apaguei os outros dois para não repetir.
+@NoArgsConstructor 
+@AllArgsConstructor 
 @Table(name = "users")
-@Getter
-@Setter
 public class User implements UserDetails { //  Agora ele "veste" a interface de segurança
     
     @Id

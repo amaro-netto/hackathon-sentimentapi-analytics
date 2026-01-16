@@ -3,91 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro | Sentiment API</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Cadastro | InsightSent</title>
+    
+    <link rel="stylesheet" href="../assets/css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="../assets/js/auth-guard.js"></script>
     <script src="../assets/js/register.js" defer></script>
 </head>
 <body>
 
-    <div class="container">
-    
-        <header>
-            <h1>
-                <i class="fas fa-user-plus"></i> Sentiment API
-            </h1>
-            <p class="subtitle">
-                Crie sua conta para acessar o sistema
-            </p>
-        </header>
-
-        <div class="main-content">
-            
-            <section class="input-section">
-                <h2 class="section-title">
-                    <i class="fas fa-id-card"></i> Dados do usuário
-                </h2>
-            
-                <form id="registerForm">
-                    <input id="email" type="email" placeholder="E-mail" required>
-                    <input id="password" type="password" placeholder="Senha" required>
-        
-                    <select id="genero" required>
-                        <option value="">Gênero</option>
-                        <option>Masculino</option>
-                        <option>Feminino</option>
-                        <option>Outro</option>
-                        <option>Prefiro não dizer</option>
-                    </select>
-
-                    <select id="estadoUf" required>
-                        <option value="">Estado (UF)</option>
-                        <option value="AC">AC</option>
-                        <option value="AL">AL</option>
-                        <option value="AP">AP</option>
-                        <option value="AM">AM</option>
-                        <option value="BA">BA</option>
-                        <option value="CE">CE</option>
-                        <option value="DF">DF</option>
-                        <option value="ES">ES</option>
-                        <option value="GO">GO</option>
-                        <option value="MA">MA</option>
-                        <option value="MT">MT</option>
-                        <option value="MS">MS</option>
-                        <option value="MG">MG</option>
-                        <option value="PA">PA</option>
-                        <option value="PB">PB</option>
-                        <option value="PR">PR</option>
-                        <option value="PE">PE</option>
-                        <option value="PI">PI</option>
-                        <option value="RJ">RJ</option>
-                        <option value="RN">RN</option>
-                        <option value="RS">RS</option>
-                        <option value="RO">RO</option>
-                        <option value="RR">RR</option>
-                        <option value="SC">SC</option>
-                        <option value="SP">SP</option>
-                        <option value="SE">SE</option>
-                    </select>
-
-                    <input id="idade" type="number" placeholder="Idade" min="13" max="120" required>
-                    
-                    <button class="btn" type="submit">
-                        <i class="fas fa-user-check"></i> Criar Conta
-                    </button>
-
-                    <p id="msg" class="form-msg"></p>
-                </form>
-            </section>
-
-        </div>
-
-        <footer>
-            <p>
-                Sistema de Classificação de Avaliações Sentiment API &copy; 2026
-            </p>
-        </footer>
+    <div class="background-container">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
     </div>
 
+    <main class="login-wrapper">
+        <div class="login-card">
+            
+            <div class="logo-area" style="margin-bottom: 20px;">
+                <h2 style="color: #004e92;">Crie sua Conta</h2>
+                <p style="color: #666;">Junte-se à plataforma de inteligência</p>
+            </div>
+
+            <form id="registerForm">
+                
+                <div class="input-group">
+                    <label>E-MAIL CORPORATIVO</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input id="email" type="email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>SENHA</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input id="password" type="password" placeholder="Crie uma senha forte" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>PERFIL PESSOAL</label>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="input-wrapper" style="flex: 1;">
+                            <i class="fas fa-venus-mars"></i>
+                            <select id="genero" required>
+                                <option value="" disabled selected>Gênero</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                                <option value="NaoBinario">Não-binário</option>
+                                <option value="Outro">Outro</option>
+                                <option value="PrefiroNaoInformar">Prefiro não informar</option>
+                            </select>
+                        </div>
+                        <div class="input-wrapper" style="width: 100px;">
+                            <input id="idade" type="number" placeholder="Idade" min="18" max="120" required style="padding-left: 10px; text-align: center;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>LOCALIZAÇÃO</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <select id="estadoUf" required>
+                            <option value="" disabled selected>Selecione seu Estado</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-primary" type="submit">
+                    <i class="fas fa-check-circle"></i> Finalizar Cadastro
+                </button>
+
+                <div class="footer-links">
+                    <p id="msg" style="min-height: 20px; font-weight: bold;"></p>
+                    <span class="divider">ou</span>
+                    <p style="font-size: 0.9rem;">
+                        Já tem conta? <a href="../../index.html" class="register-link">Fazer Login</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <footer class="page-footer">
+            <p>&copy; 2026 InsightSent - Desenvolvido por <strong>DevstechOne</strong>.</p>
+        </footer>
+    </main>
 </body>
 </html>
