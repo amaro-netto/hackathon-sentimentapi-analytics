@@ -10,6 +10,7 @@
 ![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![Scikit-Learn](https://img.shields.io/badge/scikit_learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+![PlantUML](https://img.shields.io/badge/PlantUML-%23f2f2f2.svg?style=for-the-badge&logo=plantuml&logoColor=black)
 
 ---
 
@@ -19,6 +20,7 @@
 - Tecnologias Utilizadas
 - Estrutura do Projeto
 - Execução do Projeto
+- Fluxogramas do Sistema
 - Equipe
 
 ---
@@ -177,6 +179,23 @@ Para encerrar os serviços, utilize:
 CTRL + C
 ```
 em ambos os terminais (Python e Java).
+
+---
+### 📊 Fluxogramas do Sistema
+
+Abaixo estão os fluxos principais da aplicação:
+
+#### 🔐 Fluxo de Cadastro
+Representa o processo de criação de um novo usuário no sistema. 
+![Fluxo de Cadastro](docs/fluxogramas/fluxoCadastro.png)
+
+#### 🔑 Fluxo de Login
+Representa o processo de autenticação de um usuário no sistema. 
+![Fluxo de Login](docs/fluxogramas/fluxoLogin.png)
+
+#### 💬 Fluxo de Análise de Sentimento
+Representa o processo de classificação automática de feedbacks em positivo, negativo ou neutro.
+![Fluxo de Análise de Sentimento](docs/fluxogramas/fluxoAnalise.png)
 
 ---
 
