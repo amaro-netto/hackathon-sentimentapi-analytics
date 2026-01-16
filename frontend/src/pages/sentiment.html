@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sistema de Classificação de Avaliações</title>
+        <link rel="stylesheet" href="../assets/css/style.css" type="text/css" media="all" />
+        <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+        <script src="../assets/js/script.js" defer></script>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>
+                    <i class="fas fa-comment-dots"></i> Sentiment API
+                </h1>
+                <p class="subtitle">
+                    Insira uma avaliação de usuário e o sistema classificará
+                    automaticamente seu sentimento
+                </p>
+            </header>
+
+            <div class="main-content">
+                <section class="input-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-edit"></i> Nova Avaliação
+                    </h2>
+                    <div class="char-count">
+                        <span id="charCount">0</span> caracteres
+                    </div>
+                    <textarea
+                        id="reviewInput"
+                        placeholder="Digite a avaliação do usuário aqui... Exemplo: 'Produto excelente, entrega rápida e atendimento impecável. Recomendo totalmente!'" maxlength="500"
+                    ></textarea>
+
+                   
+                     <button id="classifyBtn" class="btn">
+                        <i class="fas fa-robot"></i> Classificar Avaliação
+                    </button>
+
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Analisando avaliação...</p>
+                    </div>
+
+                    <div class="classification-result" id="result">
+                        <div class="result-header">
+                            <span class="sentiment-label" id="sentimentLabel"
+                                >Positiva</span
+                            >
+                            <span id="confidenceValue">95%</span>
+                        </div>
+                        <div class="confidence-level">
+                            <span>Confiança do Sentimento:</span>
+                            <div class="confidence-bar">
+                                <div
+                                    class="confidence-fill confidence-high"
+                                    id="confidenceBar"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="language-level">
+                            <span>Idioma: <strong id="languageLabel">Português</strong></span>
+                            <span id="languageConfidenceValue">98%</span>
+                            <div class="confidence-bar">
+                                <div
+                                    class="confidence-fill confidence-high"
+                                    id="languageConfidenceBar"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="details">
+                            <div class="detail-item">
+                                <span>Palavras-chave:</span>
+                                <span id="keywords"
+                                    >excelente, rápido, recomendo</span
+                                >
+                            </div>
+                            <div class="detail-item">
+                                <span>Data:</span>
+                                <span id="analysisDate">20/10/2023 14:30</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="results-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i> Histórico de Análises
+                    </h2>
+                    <div class="history-list" id="historyList">
+                        <!-- Itens de histórico serão adicionados aqui via JavaScript -->
+                        <div class="empty-history" id="emptyHistory">
+                            <i class="fas fa-inbox"></i>
+                            <p>Nenhuma análise realizada ainda</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="history-section">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i> Como Funciona
+                </h2>
+                <p>
+                    Este sistema classifica avaliações de usuários em três
+                    categorias principais:
+                </p>
+                <ul style="margin-top: 10px; padding-left: 20px">
+                    <li>
+                        <strong>Positiva</strong>: Avaliações com tom favorável,
+                        elogios e recomendações.
+                    </li>
+                    <li>
+                        <strong>Negativa</strong>: Avaliações com críticas,
+                        insatisfação e reclamações.
+                    </li>
+                    <li>
+                        <strong>Neutra</strong>: Avaliações factuais, sem forte
+                        tom positivo ou negativo.
+                    </li>
+                </ul>
+                <p style="margin-top: 15px">
+                    O sistema analisa o texto utilizando processamento de
+                    linguagem natural para determinar o sentimento e a confiança
+                    da classificação.
+                </p>
+            </section>
+
+            <footer>
+                <p>
+                    Sistema de Classificação de Avaliações Sentiment API &copy; 2026
+                </p>
+            </footer>
+        </div>
+    </body>
+</html>

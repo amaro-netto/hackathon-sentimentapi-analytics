@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment API - Home</title>
+    <link rel="stylesheet" href="src/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .welcome-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .welcome-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #182848;
+        }
+        
+        .welcome-section p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background-color: #4b6cb7;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #3a5795;
+        }
+        
+        .nav-btn.secondary {
+            background-color: #95a5a6;
+        }
+        
+        .nav-btn.secondary:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <i class="fas fa-robot"></i> Sentiment API
+            </h1>
+            <p class="subtitle">Classificação inteligente de sentimentos em textos</p>
+        </header>
+
+        <div class="welcome-section">
+            <h2>Bem-vindo ao Sentiment API</h2>
+            <p>Sistema avançado de análise de sentimentos com detecção de idioma</p>
+            
+            <div class="nav-buttons">
+                <a href="src/pages/sentiment.html" class="nav-btn">
+                    <i class="fas fa-play"></i> Começar Análise
+                </a>
+                <a href="src/pages/login.html" class="nav-btn secondary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="src/pages/register.html" class="nav-btn secondary">
+                    <i class="fas fa-user-plus"></i> Cadastro
+                </a>
+                <a href="#info" class="nav-btn secondary">
+                    <i class="fas fa-info-circle"></i> Saiba Mais
+                </a>
+            </div>
+        </div>
+
+        <section class="history-section" id="info">
+            <h2 class="section-title">
+                <i class="fas fa-star"></i> Recursos
+            </h2>
+            <ul style="margin-top: 20px; padding-left: 20px; line-height: 2;">
+                <li>✅ Análise de sentimentos (Positivo, Negativo, Neutro)</li>
+                <li>✅ Detecção automática de idioma</li>
+                <li>✅ Confiança de predição</li>
+                <li>✅ Histórico de análises</li>
+                <li>✅ Integração com Machine Learning</li>
+                <li>✅ Interface responsiva e moderna</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>Sistema de Classificação de Avaliações Sentiment API &copy; 2026</p>
+        </footer>
+    </div>
+</body>
+</html>
