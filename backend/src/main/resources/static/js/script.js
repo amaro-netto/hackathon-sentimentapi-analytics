@@ -12,6 +12,10 @@ const confidenceBar = document.getElementById("confidenceBar");
 const keywords = document.getElementById("keywords");
 const analysisDate = document.getElementById("analysisDate");
 
+const languageLabel = document.getElementById("languageLabel");
+const languageConfidenceValue = document.getElementById("languageConfidenceValue");
+const languageConfidenceBar = document.getElementById("languageConfidenceBar");
+
 const historyList = document.getElementById("historyList");
 const emptyHistory = document.getElementById("emptyHistory");
 const loading = document.getElementById("loading");
@@ -107,9 +111,19 @@ async function startAnalysis(text) {
             probNumerica = data.probabilidade * 100; // Caso venha decimal (0.93)
         }
 
+        // Processar probabilidade de idioma
+        let probIdiomaNum = 0;
+        if (typeof data.probIdioma === 'string') {
+            probIdiomaNum = parseFloat(data.probIdioma.replace("%", "").replace(",", "."));
+        } else if (data.probIdioma) {
+            probIdiomaNum = data.probIdioma * 100;
+        }
+
         finishAnalysis(text, {
             sentiment: capitalize(data.previsao || "Neutro"),
             confidence: Math.round(probNumerica), // Arredonda para inteiro (93)
+            language: data.idioma || "Português",
+            languageConfidence: Math.round(probIdiomaNum),
             keywords: "Análise via IA"
         });
 
@@ -139,9 +153,14 @@ function displayResult(data) {
     confidenceValue.textContent = `${data.confidence}%`;
     
     if(keywords) keywords.textContent = data.keywords;
+    
+    // Exibir idioma
+    if(languageLabel) languageLabel.textContent = data.language;
+    if(languageConfidenceValue) languageConfidenceValue.textContent = `${data.languageConfidence}%`;
 
     updateSentimentStyle(data.sentiment);
     updateConfidenceBar(data.confidence);
+    updateLanguageConfidenceBar(data.languageConfidence);
     updateAnalysisDate();
 
     if(result) result.classList.add("show");
@@ -173,6 +192,20 @@ function updateConfidenceBar(confidence) {
         confidenceBar.classList.add("confidence-medium");
     } else {
         confidenceBar.classList.add("confidence-low");
+    }
+}
+
+function updateLanguageConfidenceBar(confidence) {
+    if(!languageConfidenceBar) return;
+    languageConfidenceBar.className = "confidence-fill";
+    languageConfidenceBar.style.width = `${confidence}%`;
+
+    if (confidence >= 80) {
+        languageConfidenceBar.classList.add("confidence-high");
+    } else if (confidence >= 65) {
+        languageConfidenceBar.classList.add("confidence-medium");
+    } else {
+        languageConfidenceBar.classList.add("confidence-low");
     }
 }
 
@@ -216,9 +249,19 @@ function loadHistoryFromBackend() {
                 probHist = item.probabilidade * 100;
             }
 
+            // Processar idioma do histórico
+            let probIdiomaHist = 0;
+            if (typeof item.probIdioma === 'string') {
+                probIdiomaHist = parseFloat(item.probIdioma.replace("%", "").replace(",", "."));
+            } else if (item.probIdioma) {
+                probIdiomaHist = item.probIdioma * 100;
+            }
+
             addToHistoryVisualOnly(item.texto, {
                 sentiment: capitalize(item.previsao || "Neutro"),
-                confidence: Math.round(probHist)
+                confidence: Math.round(probHist),
+                language: item.idioma || "Português",
+                languageConfidence: Math.round(probIdiomaHist)
             });
         });
     })
@@ -242,7 +285,12 @@ function addToHistoryVisualOnly(text, data) {
     if (s.includes("negativ")) sentimentClass = "sentiment-negative";
 
     div.innerHTML = `
-        <div class="history-text">${text}</div>
+        <div class="history-text">
+            <div>${text}</div>
+            <div style="font-size: 0.85rem; color: #666; margin-top: 5px;">
+                🌐 ${data.language} (${data.languageConfidence}%)
+            </div>
+        </div>
         <div class="history-sentiment ${sentimentClass}">
             ${data.sentiment} (${data.confidence}%)
         </div>

@@ -167,6 +167,28 @@
             margin-bottom: 15px;
         }
         
+        .language-level {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+            padding: 12px;
+            background-color: #e8f4f8;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .language-level span {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .language-level span:last-of-type {
+            margin-bottom: 0;
+        }
+        
         .confidence-bar {
             flex-grow: 1;
             height: 10px;
