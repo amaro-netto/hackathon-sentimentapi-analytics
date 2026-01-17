@@ -6,12 +6,13 @@ import com.hackathon.sentiment_api.dto.SentimentResponse;
 import com.hackathon.sentiment_api.service.SentimentService;
 
 import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*; // Importei tudo de web para limpar
 import java.util.List;
 
 @RestController
-@RequestMapping("/sentiment")
+@RequestMapping("/api/sentiments")
 @CrossOrigin(origins = "*") // Segurança:Para evitar  erro de CORS se o front estiver em outra porta
 public class SentimentController {
 
@@ -21,15 +22,17 @@ public class SentimentController {
     public SentimentController(SentimentService service) {
         this.service = service;
     }
-
+    
     @PostMapping
     public ResponseEntity<SentimentResponse> processarSentimento(@RequestBody @Valid SentimentRequest request) {
         SentimentResponse resposta = service.analisarSentimento(request);
         return ResponseEntity.ok(resposta);
     }
 
-    @GetMapping("/history")
+    @GetMapping // <--- CORRIGIDO: Removemos "/history" para bater com o GET raiz
     public ResponseEntity<List<SentimentHistoryResponse>> listarHistorico() {
-        return ResponseEntity.ok(service.listarHistorico());
+        List<SentimentHistoryResponse> lista = service.listarHistorico();
+        if (lista == null) return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(lista);
     }
 }

@@ -11,18 +11,18 @@ const sentimentLabel = document.getElementById("sentimentLabel");
 const confidenceValue = document.getElementById("confidenceValue");
 const confidenceBar = document.getElementById("confidenceBar");
 
-// Elementos de Idioma (Novos)
+// Elementos de Idioma
 const languageLabel = document.getElementById("languageLabel");
 const languageProb = document.getElementById("languageProb");
-const langConfidenceBar = document.getElementById("langConfidenceBar"); // A barra azul
+const langConfidenceBar = document.getElementById("langConfidenceBar");
 const analysisDate = document.getElementById("analysisDate");
 
 // Elementos Globais
 const historyList = document.getElementById("historyList");
 const loading = document.getElementById("loading");
 
-// Configuração da API (Ajuste a porta se necessário)
-const API_URL = "http://localhost:8080/sentiment"; 
+// Configuração da API (Padrão Unificado)
+const API_URL = "http://localhost:8080/api/sentiments"; 
 
 // ===============================
 // 2. FUNÇÕES UTILITÁRIAS
@@ -32,7 +32,7 @@ const API_URL = "http://localhost:8080/sentiment";
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "/"; // Chuta pro login se não tiver token
+        window.location.href = "/"; 
         throw new Error("Sessão expirada");
     }
     return { 
@@ -43,36 +43,27 @@ function getAuthHeaders() {
 
 function showLoading() {
     if(loading) loading.style.display = "block";
-    // NÃO esconde mais o resultContainer, ele fica lá fixo
-    if(resultContainer) resultContainer.style.opacity = "0.5"; // Só deixa clarinho
+    if(resultContainer) resultContainer.style.opacity = "0.5"; 
 }
 
 function hideLoading() {
     if(loading) loading.style.display = "none";
-    if(resultContainer) resultContainer.style.opacity = "1"; // Volta ao normal
+    if(resultContainer) resultContainer.style.opacity = "1"; 
 }
 
-// Deixa a primeira letra maiúscula (ex: "positivo" -> "Positivo")
 function capitalize(text) {
     if (!text) return "--";
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
-// Limpa e padroniza porcentagens vindas do Backend
-// Aceita: "98%", 0.98, 98, "98.5"
 function fixPercentage(val) {
     if (!val) return 0;
-    
-    // Se for string, remove o %
+    // Limpa string "98.5%" para número 98.5
     let num = parseFloat(String(val).replace("%", ""));
-    
-    // Se vier em decimal (0.98), multiplica por 100
+    // Se vier 0.98, transforma em 98
     if (num <= 1 && num > 0) return Math.round(num * 100);
-    
-    // Se vier normal (98), mantém
-    // Se vier maluco (> 100), trava em 100
+    // Trava teto em 100
     if (num > 100) return 100;
-    
     return Math.round(num);
 }
 
@@ -80,13 +71,11 @@ function fixPercentage(val) {
 // 3. LÓGICA DE INTERAÇÃO
 // ===============================
 
-// Contador de Caracteres
 if (reviewInput) {
     reviewInput.addEventListener("input", () => {
         if(charCount) charCount.textContent = reviewInput.value.length + " caracteres";
     });
 
-    // Enviar com CTRL + ENTER
     reviewInput.addEventListener("keydown", (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
             classifyBtn.click();
@@ -94,7 +83,6 @@ if (reviewInput) {
     });
 }
 
-// Botão Analisar
 if (classifyBtn) {
     classifyBtn.addEventListener("click", () => {
         const text = reviewInput.value.trim();
@@ -119,7 +107,6 @@ async function runAnalysis(text) {
             body: JSON.stringify({ texto: text })
         });
         
-        // Se o token expirou
         if (response.status === 403) {
             localStorage.removeItem("token");
             window.location.href = "/";
@@ -130,22 +117,25 @@ async function runAnalysis(text) {
 
         const data = await response.json();
 
-        // Prepara os dados limpos para exibir
+        // --- CORREÇÃO DE NOMES (Mapping Inteligente) ---
+        // O Python retorna: sentimento, prob_sentimento, idioma, prob_idioma
+        // O Java DTO pode retornar: sentiment, probability, language, etc.
+        // Aqui aceitamos qualquer um dos dois:
+        
+        const sentimentRaw = data.sentimento || data.sentiment || data.previsao || "Neutro";
+        const probRaw = data.prob_sentimento || data.probabilidade || data.probability || 0;
+        const langRaw = data.idioma || data.language || "pt";
+        const probLangRaw = data.prob_idioma || data.probIdioma || 99;
+
         const resultData = {
-            sentiment: capitalize(data.previsao || "Neutro"),
-            // Pega a confiança do sentimento
-            confidence: fixPercentage(data.probabilidade),
-            // Pega o idioma (se vier null, assume PT)
-            language: (data.idioma || "pt").toUpperCase(),
-            // Pega a confiança do idioma
-            langConfidence: fixPercentage(data.probIdioma || 99), 
+            sentiment: capitalize(sentimentRaw),
+            confidence: fixPercentage(probRaw),
+            language: langRaw.toUpperCase(),
+            langConfidence: fixPercentage(probLangRaw), 
             date: new Date()
         };
 
-        // 1. Atualiza a tela da esquerda
         displayResult(resultData);
-        
-        // 2. Adiciona no histórico da direita
         addToHistoryVisual(text, resultData);
 
     } catch (err) {
@@ -157,12 +147,11 @@ async function runAnalysis(text) {
 }
 
 // ===============================
-// 5. EXIBIÇÃO DO RESULTADO (PRINCIPAL)
+// 5. EXIBIÇÃO DO RESULTADO
 // ===============================
 function displayResult(data) {
     if(!resultContainer) return;
 
-    // Preenche os textos
     if(sentimentLabel) sentimentLabel.textContent = data.sentiment;
     if(confidenceValue) confidenceValue.textContent = `${data.confidence}%`;
     
@@ -173,31 +162,26 @@ function displayResult(data) {
         analysisDate.textContent = data.date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
     }
 
-    // --- BARRA DE SENTIMENTO ---
+    // Barra Sentimento
     if(confidenceBar) {
-        confidenceBar.style.width = `${data.confidence}%`; // Define tamanho
-        
-        // Define cor
-        confidenceBar.className = "progress-bar-fill"; // Limpa classes anteriores
+        confidenceBar.style.width = `${data.confidence}%`; 
+        confidenceBar.className = "progress-bar-fill"; 
         if(data.sentiment.includes("Positiv")) confidenceBar.classList.add("Positivo");
         else if(data.sentiment.includes("Negativ")) confidenceBar.classList.add("Negativo");
         else confidenceBar.classList.add("Neutro");
     }
 
-    // --- BARRA DE IDIOMA (AQUELE PROBLEMA QUE VOCÊ FALOU) ---
+    // Barra Idioma
     if(langConfidenceBar) {
-        // Agora ela vai encher baseada na certeza do idioma
         langConfidenceBar.style.width = `${data.langConfidence}%`;
-        // Ela já tem a classe 'blue' no HTML, então vai ficar azul
     }
 
-    // --- CORES DO CARD ---
-    resultContainer.className = "result-container"; // Limpa classes
+    // Cor do Card Principal
+    resultContainer.className = "result-container"; 
     if(data.sentiment.includes("Positiv")) resultContainer.classList.add("Positivo");
     else if(data.sentiment.includes("Negativ")) resultContainer.classList.add("Negativo");
     else resultContainer.classList.add("Neutro");
 
-    // Mostra o card
     resultContainer.style.display = "block";
 }
 
@@ -205,49 +189,55 @@ function displayResult(data) {
 // 6. HISTÓRICO (CARDS LATERAIS)
 // ===============================
 
-// Carregar histórico salvo no banco ao abrir a página
 window.addEventListener("DOMContentLoaded", () => {
     if(localStorage.getItem("token")) {
-        fetch(`${API_URL}/history`, { headers: getAuthHeaders() })
+        // CORREÇÃO: Removemos o "/history" para bater com o Controller novo
+        fetch(API_URL, { headers: getAuthHeaders() })
         .then(r => r.ok ? r.json() : [])
         .then(data => {
-            if(historyList) historyList.innerHTML = ""; // Limpa msg de vazio
+            if(historyList) historyList.innerHTML = ""; 
             
-            // Inverte para mostrar o mais recente primeiro (se o back não ordenar)
-            // Se o back já ordenar, pode tirar o .reverse()
-            data.forEach(item => {
-                addToHistoryVisual(item.texto, {
-                    sentiment: capitalize(item.previsao),
-                    confidence: fixPercentage(item.probabilidade),
-                    language: (item.idioma || "PT").toUpperCase(),
-                    langConfidence: 0, // Histórico antigo talvez não tenha isso, sem problemas
-                    date: new Date() // Idealmente o back mandaria a data real
+            // Inverte para mostrar o mais recente primeiro
+            const listaInvertida = Array.isArray(data) ? data.slice().reverse() : [];
+
+            listaInvertida.forEach(item => {
+                // Mapping para o Histórico também
+                const sent = item.sentimento || item.sentiment || item.previsao || "Neutro";
+                const prob = item.prob_sentimento || item.probabilidade || item.probability || 0;
+                const lang = item.idioma || item.language || "PT";
+                const dateRaw = item.dataAnalise || item.createdAt || new Date();
+
+                addToHistoryVisual(item.texto || item.text, {
+                    sentiment: capitalize(sent),
+                    confidence: fixPercentage(prob),
+                    language: lang.toUpperCase(),
+                    date: new Date(dateRaw) 
                 });
             });
             
-            if(data.length === 0) showEmptyHistory();
+            if(listaInvertida.length === 0) showEmptyHistory();
         })
-        .catch(() => showEmptyHistory());
+        .catch((e) => {
+            console.error("Erro ao carregar histórico:", e);
+            showEmptyHistory();
+        });
     }
 });
 
 function addToHistoryVisual(text, data) {
     if(!historyList) return;
 
-    // Remove mensagem de "Vazio" se existir
     const emptyState = historyList.querySelector(".empty-state");
     if(emptyState) emptyState.remove();
 
     const div = document.createElement("div");
     
-    // Define a classe de cor para a borda lateral
     let sentimentClass = "Neutro";
     if(data.sentiment.includes("Positiv")) sentimentClass = "Positivo";
     if(data.sentiment.includes("Negativ")) sentimentClass = "Negativo";
 
     div.className = `history-card-item ${sentimentClass}`;
 
-    // HTML Interno do Card
     div.innerHTML = `
         <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#888; margin-bottom:5px;">
             <span>${data.date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
@@ -268,7 +258,6 @@ function addToHistoryVisual(text, data) {
         </div>
     `;
 
-    // Adiciona no topo da lista
     historyList.prepend(div);
 }
 
@@ -282,9 +271,8 @@ function showEmptyHistory() {
     `;
 }
 
-// Auxiliar de cores para o badge do histórico
 function getColor(type) {
     if(type === "Positivo") return "#2ecc71";
     if(type === "Negativo") return "#e74c3c";
-    return "#3498db"; // Neutro
+    return "#3498db"; 
 }

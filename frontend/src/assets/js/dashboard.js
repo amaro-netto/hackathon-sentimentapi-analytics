@@ -1,189 +1,397 @@
+const API_URL = "http://localhost:8080/api/sentiments";
+
 document.addEventListener("DOMContentLoaded", () => {
     Chart.defaults.font.family = "'Inter', sans-serif";
     Chart.defaults.color = '#666';
 
-    let sentimentChartInstance = null;
-    let regionChartInstance = null;
-    let demographicsChartInstance = null;
-    let evolutionChartInstance = null;
-
-    updateDashboard();
+    checkAuthAndLoadDashboard();
 
     document.getElementById("btnApplyFilters").addEventListener("click", () => {
-        const btn = document.getElementById("btnApplyFilters");
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
-        
-        setTimeout(() => {
-            updateDashboard();
-            btn.innerHTML = originalText;
-        }, 600);
+        loadDashboardData();
     });
 });
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function checkAuthAndLoadDashboard() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "../../index.html";
+        return;
+    }
+    loadDashboardData();
 }
 
-function updateDashboard() {
-    updateKPIs();
-    renderSentimentChart();
-    renderRegionChart();
-    renderDemographicsChart();
-    renderEvolutionChart();
+async function loadDashboardData() {
+    const btn = document.getElementById("btnApplyFilters");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+    btn.disabled = true;
+
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(API_URL, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error("Falha ao buscar dados");
+
+        const data = await response.json();
+        const filteredData = applyFilters(data);
+        
+        updateKPIs(filteredData);
+        renderCharts(filteredData);
+
+    } catch (error) {
+        console.error("Erro Dashboard:", error);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
-function updateKPIs() {
-    document.getElementById("kpiTotal").innerText = getRandomInt(1500, 8000).toLocaleString();
-    document.getElementById("kpiPositive").innerText = getRandomInt(45, 80) + "%";
+function applyFilters(data) {
+    // 1. Pegar valores dos inputs
+    const dateStartVal = document.getElementById("dateStart").value;
+    const dateEndVal = document.getElementById("dateEnd").value;
+    const region = document.getElementById("filterRegion").value;
+    const gender = document.getElementById("filterGender").value; 
+    const sentimentFilter = document.getElementById("filterSentiment").value;
+
+    return data.filter(item => {
+        // Normalização dos dados (suporta DTO novo e antigo)
+        const sent = item.previsao || item.sentiment || "";
+        const dateRaw = item.dataAnalise || item.createdAt || item.data_hora;
+        const user = item.usuario || item.user || {}; 
+        const uf = user.estado_uf || user.estado || "N/A";
+        const gen = user.genero || user.gender || "N/A";
+
+        // --- FILTRO DE DATA (RANGE) ---
+        if (dateRaw) {
+            const itemDate = new Date(dateRaw);
+            itemDate.setHours(0,0,0,0);
+
+            if (dateStartVal) {
+                const startDate = new Date(dateStartVal);
+                startDate.setHours(0,0,0,0); 
+                if (itemDate < startDate) return false;
+            }
+            if (dateEndVal) {
+                const endDate = new Date(dateEndVal);
+                endDate.setHours(23,59,59,999);
+                if (itemDate > endDate) return false;
+            }
+        }
+
+        // --- FILTRO DE REGIÃO ---
+        if (region !== "ALL" && !isRegionMatch(uf, region)) return false;
+
+        // --- FILTRO DE GÊNERO ---
+        if (gender !== "ALL") {
+            if (gen.toLowerCase() !== gender.toLowerCase()) return false;
+        }
+
+        // --- FILTRO DE SENTIMENTO ---
+        const s = sent.toLowerCase();
+        if (sentimentFilter === "POS" && !s.includes("positiv")) return false;
+        if (sentimentFilter === "NEG" && !s.includes("negativ")) return false;
+        if (sentimentFilter === "NEU" && !s.includes("neutr")) return false;
+
+        return true;
+    });
+}
+
+function isRegionMatch(uf, regionFilter) {
+    const regions = {
+        "SE": ["SP", "RJ", "MG", "ES"],
+        "S":  ["RS", "SC", "PR"],
+        "NE": ["BA", "PE", "CE", "MA", "PB", "RN", "AL", "PI", "SE"],
+        "CO": ["DF", "GO", "MT", "MS"],
+        "N":  ["AM", "PA", "AC", "RO", "RR", "AP", "TO"]
+    };
+    return regions[regionFilter] ? regions[regionFilter].includes(uf) : false;
+}
+
+// ======================================================
+// 1. UPDATE KPIs (AGORA COM CÁLCULO REAL DE CRESCIMENTO)
+// ======================================================
+function updateKPIs(data) {
+    // Total Geral
+    document.getElementById("kpiTotal").innerText = data.length.toLocaleString();
     
-    // Regiões do Brasil
-    const regions = ["Sudeste", "Nordeste", "Sul", "Centro-Oeste", "Norte"];
-    document.getElementById("kpiRegion").innerText = regions[getRandomInt(0, 4)];
+    // Positividade
+    const positives = data.filter(d => (d.previsao||d.sentiment||"").toLowerCase().includes("positiv")).length;
+    const percent = data.length > 0 ? ((positives / data.length) * 100).toFixed(1) : 0;
+    document.getElementById("kpiPositive").innerText = percent + "%";
+
+    // Região Destaque
+    const counts = {};
+    data.forEach(d => {
+        const u = d.usuario || d.user || {};
+        const uf = u.estado_uf || u.estado || "N/A";
+        counts[uf] = (counts[uf] || 0) + 1;
+    });
     
-    const trend = getRandomInt(-5, 25);
-    const trendEl = document.getElementById("kpiTrend");
-    trendEl.innerText = (trend > 0 ? "+" : "") + trend + "%";
-    trendEl.style.color = trend >= 0 ? "#2ecc71" : "#e74c3c";
+    // Pega a maior ou mostra traço
+    const topRegion = Object.keys(counts).length > 0 
+        ? Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b) 
+        : "--";
+    document.getElementById("kpiRegion").innerText = topRegion;
+
+    // --- CÁLCULO DE CRESCIMENTO (MÊS ATUAL vs ANTERIOR) ---
+    const now = new Date();
+    const currentMonth = now.getMonth(); 
+    const currentYear = now.getFullYear();
+
+    let countThisMonth = 0;
+    let countLastMonth = 0;
+
+    data.forEach(d => {
+        const raw = d.createdAt || d.dataAnalise || d.data_hora;
+        if (!raw) return;
+        const date = new Date(raw);
+
+        // Mês Atual
+        if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+            countThisMonth++;
+        }
+
+        // Mês Passado (Trata virada de ano)
+        const isLastMonth = (currentMonth === 0) 
+            ? (date.getMonth() === 11 && date.getFullYear() === currentYear - 1)
+            : (date.getMonth() === currentMonth - 1 && date.getFullYear() === currentYear);
+            
+        if (isLastMonth) countLastMonth++;
+    });
+
+    let growth = 0;
+    if (countLastMonth > 0) {
+        growth = ((countThisMonth - countLastMonth) / countLastMonth) * 100;
+    } else if (countThisMonth > 0) {
+        growth = 100; // Se antes era 0 e agora tem, cresceu 100%
+    }
+
+    const elTrend = document.getElementById("kpiTrend");
+    const val = growth.toFixed(0);
+
+    if (growth > 0) {
+        elTrend.innerHTML = `<i class="fas fa-arrow-up"></i> +${val}%`;
+        elTrend.style.color = "#2ecc71";
+    } else if (growth < 0) {
+        elTrend.innerHTML = `<i class="fas fa-arrow-down"></i> ${val}%`;
+        elTrend.style.color = "#e74c3c";
+    } else {
+        elTrend.innerHTML = `<i class="fas fa-minus"></i> 0%`;
+        elTrend.style.color = "#f39c12";
+    }
 }
 
-// 1. Sentimentos (Pizza) - Já tinha os 3, mantido.
-function renderSentimentChart() {
+// --- CONFIGURAÇÃO DOS GRÁFICOS ---
+let charts = {};
+
+function destroyChart(id) {
+    if (charts[id]) charts[id].destroy();
+}
+
+function renderCharts(data) {
+    renderSentimentChart(data);
+    renderRegionChart(data);
+    renderDemographicsChart(data);
+    renderEvolutionChart(data);
+    renderStackedStateChart(data);
+}
+
+// 1. Pizza
+function renderSentimentChart(data) {
+    destroyChart('sentimentChart');
     const ctx = document.getElementById('sentimentChart').getContext('2d');
-    const pos = getRandomInt(40, 60);
-    const neg = getRandomInt(10, 25);
-    const neu = 100 - pos - neg;
+    let pos = 0, neg = 0, neu = 0;
+    data.forEach(d => {
+        const s = (d.previsao || d.sentiment || "").toLowerCase();
+        if(s.includes("positiv")) pos++;
+        else if(s.includes("negativ")) neg++;
+        else neu++;
+    });
 
-    if(sentimentChartInstance) sentimentChartInstance.destroy();
-
-    sentimentChartInstance = new Chart(ctx, {
+    charts['sentimentChart'] = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Positivo', 'Negativo', 'Neutro'],
             datasets: [{
                 data: [pos, neg, neu],
-                backgroundColor: ['#2ecc71', '#e74c3c', '#3498db'],
-                borderWidth: 0, hoverOffset: 4
+                backgroundColor: ['#2ecc71', '#e74c3c', '#3498db']
             }]
         },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right' } }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// 2. Regiões (Barras) - CORRIGIDO PARA REGIÕES DO BRASIL
-function renderRegionChart() {
+// 2. Barras (Contagem Simples por UF)
+function renderRegionChart(data) {
+    destroyChart('regionChart');
     const ctx = document.getElementById('regionChart').getContext('2d');
+    const counts = {};
+    data.forEach(d => {
+        const u = d.usuario || d.user || {};
+        const uf = u.estado_uf || u.estado || "N/I";
+        counts[uf] = (counts[uf] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, 5);
     
-    // Dados simulados maiores para Sudeste/Nordeste (comum no Brasil)
-    const data = [
-        getRandomInt(400, 800), // Sudeste
-        getRandomInt(300, 600), // Nordeste
-        getRandomInt(200, 400), // Sul
-        getRandomInt(100, 300), // Centro-Oeste
-        getRandomInt(50, 200)   // Norte
-    ];
-    
-    if(regionChartInstance) regionChartInstance.destroy();
-
-    regionChartInstance = new Chart(ctx, {
+    charts['regionChart'] = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Sudeste', 'Nordeste', 'Sul', 'Centro-Oeste', 'Norte'],
+            labels: sorted.map(x => x[0]),
             datasets: [{
-                label: 'Volume',
-                data: data,
-                backgroundColor: ['#0061ff', '#00c6ff', '#9b59b6', '#f39c12', '#2ecc71'],
+                label: 'Total Avaliações',
+                data: sorted.map(x => x[1]),
+                backgroundColor: '#0061ff',
                 borderRadius: 4
             }]
         },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } },
-            plugins: { legend: { display: false } }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// 3. Demografia (Polar) - CORRIGIDO PARA TODOS OS GÊNEROS
-function renderDemographicsChart() {
+// 3. Demográfico
+function renderDemographicsChart(data) {
+    destroyChart('demographicsChart');
     const ctx = document.getElementById('demographicsChart').getContext('2d');
-    
-    if(demographicsChartInstance) demographicsChartInstance.destroy();
+    const counts = {};
+    data.forEach(d => {
+        const u = d.usuario || d.user || {};
+        const g = u.genero || u.gender || "Outro";
+        counts[g] = (counts[g] || 0) + 1;
+    });
 
-    demographicsChartInstance = new Chart(ctx, {
+    charts['demographicsChart'] = new Chart(ctx, {
         type: 'polarArea',
         data: {
-            // Labels iguais ao cadastro
-            labels: ['Masculino', 'Feminino', 'Não-Binário', 'Outro', 'Ñ Informado'],
+            labels: Object.keys(counts),
             datasets: [{
-                label: 'Volume',
-                data: [
-                    getRandomInt(300, 500), // M
-                    getRandomInt(300, 500), // F
-                    getRandomInt(20, 80),   // NB
-                    getRandomInt(10, 50),   // Outro
-                    getRandomInt(30, 100)   // NI
-                ],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)', // M (Azul)
-                    'rgba(255, 99, 132, 0.7)', // F (Rosa)
-                    'rgba(153, 102, 255, 0.7)', // NB (Roxo)
-                    'rgba(255, 206, 86, 0.7)',  // Outro (Amarelo)
-                    'rgba(201, 203, 207, 0.7)'  // NI (Cinza)
-                ]
+                data: Object.values(counts),
+                backgroundColor: ['#36a2eb', '#ff6384', '#cc65fe']
             }]
         },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// 4. Evolução (Linha) - CORRIGIDO: ADICIONADO NEUTRO
-function renderEvolutionChart() {
+// ======================================================
+// 4. EVOLUÇÃO (AGORA COM LINHA NEUTRA)
+// ======================================================
+function renderEvolutionChart(data) {
+    destroyChart('evolutionChart');
     const ctx = document.getElementById('evolutionChart').getContext('2d');
-    
-    const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-    
-    if(evolutionChartInstance) evolutionChartInstance.destroy();
+    const timeline = {};
 
-    evolutionChartInstance = new Chart(ctx, {
+    data.forEach(d => {
+        const raw = d.createdAt || d.dataAnalise || d.data_hora;
+        if(!raw) return;
+        
+        // Cria chave DD/MM
+        const dateObj = new Date(raw);
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dateKey = `${day}/${month}`;
+        
+        if(!timeline[dateKey]) timeline[dateKey] = { pos: 0, neg: 0, neu: 0 };
+        
+        const s = (d.previsao || d.sentiment || "").toLowerCase();
+        if(s.includes("positiv")) timeline[dateKey].pos++;
+        else if(s.includes("negativ")) timeline[dateKey].neg++;
+        else timeline[dateKey].neu++; // <--- Contando Neutro
+    });
+
+    // Ordena as datas corretamente
+    const labels = Object.keys(timeline).sort((a, b) => {
+        const [dA, mA] = a.split('/').map(Number);
+        const [dB, mB] = b.split('/').map(Number);
+        return (mA - mB) || (dA - dB);
+    });
+
+    charts['evolutionChart'] = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
                     label: 'Positivo',
-                    data: labels.map(() => getRandomInt(100, 300)),
+                    data: labels.map(l => timeline[l].pos),
                     borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    fill: true, tension: 0.4
+                    tension: 0.4
                 },
                 {
                     label: 'Negativo',
-                    data: labels.map(() => getRandomInt(20, 100)),
+                    data: labels.map(l => timeline[l].neg),
                     borderColor: '#e74c3c',
-                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                    fill: true, tension: 0.4
+                    tension: 0.4
+                },
+                { // <--- NOVA LINHA AZUL (NEUTRO)
+                    label: 'Neutro',
+                    data: labels.map(l => timeline[l].neu),
+                    borderColor: '#3498db',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+// 5. BARRAS EMPILHADAS (Sentimento x Estado)
+function renderStackedStateChart(data) {
+    destroyChart('stackedStateChart');
+    const ctx = document.getElementById('stackedStateChart').getContext('2d');
+
+    const stateData = {};
+
+    data.forEach(d => {
+        const u = d.usuario || d.user || {};
+        const uf = u.estado_uf || u.estado || "N/A";
+        const s = (d.previsao || d.sentiment || "").toLowerCase();
+
+        if (!stateData[uf]) stateData[uf] = { pos: 0, neg: 0, neu: 0 };
+
+        if (s.includes("positiv")) stateData[uf].pos++;
+        else if (s.includes("negativ")) stateData[uf].neg++;
+        else stateData[uf].neu++;
+    });
+
+    const sortedStates = Object.keys(stateData).sort((a, b) => {
+        const totalA = stateData[a].pos + stateData[a].neg + stateData[a].neu;
+        const totalB = stateData[b].pos + stateData[b].neg + stateData[b].neu;
+        return totalB - totalA; 
+    }).slice(0, 8); 
+
+    charts['stackedStateChart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sortedStates,
+            datasets: [
+                {
+                    label: 'Positivo',
+                    data: sortedStates.map(uf => stateData[uf].pos),
+                    backgroundColor: '#2ecc71'
                 },
                 {
-                    label: 'Neutro', // Nova Linha
-                    data: labels.map(() => getRandomInt(30, 80)),
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    fill: true, tension: 0.4
+                    label: 'Neutro',
+                    data: sortedStates.map(uf => stateData[uf].neu),
+                    backgroundColor: '#3498db'
+                },
+                {
+                    label: 'Negativo',
+                    data: sortedStates.map(uf => stateData[uf].neg),
+                    backgroundColor: '#e74c3c'
                 }
             ]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            scales: { y: { beginAtZero: true } },
-            plugins: { legend: { position: 'top' } }
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true }
+            }
         }
     });
 }

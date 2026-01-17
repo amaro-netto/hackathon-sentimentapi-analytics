@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  # 0. Frontend (O Site) - NOVO!
+  sentiment_frontend:
+    build: ./frontend
+    container_name: sentiment_frontend_container
+    ports:
+      - "3000:80"  # Mapeia a porta 3000 do seu PC para a 80 do Nginx
+    networks:
+      - app-network
+      
   # 1. Banco de Dados
   sentiment_db:
     image: postgres:15-alpine

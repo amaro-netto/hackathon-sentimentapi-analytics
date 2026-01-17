@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SentimentService {
@@ -116,12 +117,32 @@ public class SentimentService {
     }
 
     public List<SentimentHistoryResponse> listarHistorico() {
-        return logRepository.findTop10ByOrderByDataHoraDesc()
-            .stream()
-            .map(l -> new SentimentHistoryResponse(
-                l.getId(), l.getTexto(), l.getPrevisao(), l.getProbabilidade(), 
-                l.getIdioma(), l.getProbIdioma(), l.getDataHora()
-            ))
-            .toList();
+        // 1. Mudei de findTop10 para findAll() para trazer os 50 registros
+        // Se quiser manter ordenado: logRepository.findAll(Sort.by(Sort.Direction.DESC, "dataHora"));
+        // Mas o findAll() padrão já serve para testar quantidade.
+        List<SentimentLog> logs = logRepository.findAll();
+
+        return logs.stream().map(l -> {
+            // Extrai dados do usuário com segurança (caso seja log antigo sem user)
+            String estado = "N/A";
+            String genero = "Outro";
+            
+            if (l.getUser() != null) {
+                estado = l.getUser().getEstadoUf(); // Pega do User.java
+                genero = l.getUser().getGenero();   // Pega do User.java
+            }
+
+            return new SentimentHistoryResponse(
+                l.getId(), 
+                l.getTexto(), 
+                l.getPrevisao(), 
+                l.getProbabilidade(), 
+                l.getIdioma(), 
+                l.getProbIdioma(), 
+                l.getDataHora(),
+                // Preenche o novo objeto de Usuário
+                new SentimentHistoryResponse.UserSummary(estado, genero)
+            );
+        }).collect(Collectors.toList());
     }
 }
