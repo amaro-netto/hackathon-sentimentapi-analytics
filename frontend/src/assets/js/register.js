@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // Redireciona para a tela de login
                     setTimeout(() => {
-                        window.location.href = "/src/pages/login.html";
+                        window.location.href = "/";
                     }, 1500);
                 } else {
                     msg.textContent = "❌ " + (text || "Erro no cadastro");

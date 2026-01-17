@@ -18,7 +18,7 @@ const analysisDate = document.getElementById("analysisDate");
 const historyList = document.getElementById("historyList");
 const loading = document.getElementById("loading");
 
-const API_URL = "http://localhost:8080/api/sentiments"; 
+const API_URL = "/api/sentiments"; 
 
 // ===============================
 // 2. FUNÇÕES UTILITÁRIAS
