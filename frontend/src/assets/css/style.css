@@ -1,0 +1,176 @@
+/* =========================================
+   1. RESET E ESTRUTURA (CORREÇÃO RODAPÉ)
+   ========================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #0061ff 0%, #002855 100%);
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;          /* NOVO: Transforma o body em Flex */
+    flex-direction: column; /* NOVO: Organiza em coluna vertical */
+    overflow-x: hidden;
+}
+
+/* Fundo Geométrico */
+body::before {
+    content: ''; position: absolute; width: 600px; height: 600px;
+    background: rgba(255, 255, 255, 0.05); border-radius: 50%; top: -200px; left: -200px;
+    animation: float 20s infinite ease-in-out; pointer-events: none; z-index: 0;
+}
+
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(30px); } }
+
+/* =========================================
+   2. LAYOUT (WRAPPER EXPANSÍVEL)
+   ========================================= */
+.main-wrapper {
+    position: relative; z-index: 10;
+    width: 95%; max-width: 1200px; margin: 0 auto; 
+    flex: 1; /* NOVO: Faz o conteúdo crescer e empurrar o rodapé */
+    display: flex;
+    flex-direction: column;
+}
+
+/* GRID PRINCIPAL */
+.sentiment-dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 900px) {
+    .sentiment-dashboard-grid { grid-template-columns: 1fr; }
+}
+
+/* =========================================
+   3. CARDS
+   ========================================= */
+.white-card {
+    background: #ffffff; border-radius: 16px; padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    height: 100%; /* Garante altura igual nas colunas */
+}
+
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.card-header h2 { font-size: 1.4rem; color: #004e92; margin: 0; }
+.char-counter { font-size: 0.8rem; color: #999; }
+
+textarea {
+    width: 100%; height: 130px; padding: 15px; border: 1px solid #ddd;
+    border-radius: 8px; resize: none; font-size: 1rem; margin-bottom: 15px;
+    background: #f9f9f9; transition: 0.3s;
+}
+textarea:focus { border-color: #0061ff; outline: none; background: #fff; }
+
+.action-area { display: flex; justify-content: flex-end; }
+
+.btn-primary {
+    padding: 12px 25px; background: linear-gradient(90deg, #0061ff, #00c6ff);
+    color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,97,255,0.3); }
+
+/* =========================================
+   4. ÁREA DE RESULTADO (ESTÁTICA)
+   ========================================= */
+.result-container {
+    margin-top: 25px;
+    background: #f8fbff;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 6px solid #ccc; /* Cor neutra padrão */
+    /* Removemos o display:none e animation daqui para ser estático */
+    transition: all 0.3s ease;
+}
+
+/* Cores Dinâmicas */
+.result-container.Positivo { border-color: #2ecc71; background: #eafaf1; }
+.result-container.Negativo { border-color: #e74c3c; background: #fdedec; }
+.result-container.Neutro { border-color: #3498db; background: #ebf5fb; }
+
+.result-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+.result-label { font-size: 0.75rem; color: #666; font-weight: 700; letter-spacing: 0.5px; }
+#sentimentLabel { font-size: 1.8rem; line-height: 1; margin-top: 5px; color: #333; }
+
+.confidence-badge {
+    background: white; padding: 4px 12px; border-radius: 20px; font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem;
+}
+
+/* Barras */
+.progress-container { width: 100%; margin: 5px 0 15px 0; }
+.progress-container.small { margin-top: 5px; opacity: 0.9; }
+
+.progress-bar-bg { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.progress-bar-fill { height: 100%; width: 0%; transition: width 1s ease; background-color: #ccc; }
+
+.progress-bar-fill.Positivo { background-color: #2ecc71; }
+.progress-bar-fill.Negativo { background-color: #e74c3c; }
+.progress-bar-fill.Neutro { background-color: #3498db; }
+.progress-bar-fill.blue { background-color: #0061ff; }
+
+.divider-light { border: 0; border-top: 1px solid rgba(0,0,0,0.1); margin: 15px 0; }
+.meta-info-row { display: flex; gap: 20px; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
+.meta-item-box { display: flex; align-items: center; }
+.meta-item-box i { color: #0061ff; margin-right: 5px; }
+.date-footer { font-size: 0.8rem; color: #999; text-align: right; margin-top: 10px; }
+
+/* Loading State (Overlay) */
+.loading-overlay {
+    text-align: center; color: #0061ff; padding: 20px; font-weight: 500;
+    display: none; /* Só aparece quando ativado */
+}
+
+/* =========================================
+   5. HISTÓRICO E INFO CARD
+   ========================================= */
+.full-height { height: 100%; display: flex; flex-direction: column; min-height: 400px; }
+.history-list-styled { flex: 1; overflow-y: auto; padding-right: 5px; max-height: 600px; }
+
+.history-card-item {
+    background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px;
+    margin-bottom: 10px; border-left: 4px solid #ccc; transition: 0.2s;
+}
+.history-card-item:hover { transform: translateX(3px); }
+.history-card-item.Positivo { border-left-color: #2ecc71; }
+.history-card-item.Negativo { border-left-color: #e74c3c; }
+.history-card-item.Neutro { border-left-color: #3498db; }
+
+.empty-state { text-align: center; color: #ccc; margin-top: 50px; }
+.empty-state i { font-size: 2.5rem; margin-bottom: 10px; }
+
+.info-card-full { margin-top: auto; /* Empurra pro final do container se sobrar espaço */ }
+.info-grid { display: flex; gap: 15px; margin-top: 15px; }
+.info-item { flex: 1; text-align: center; padding: 15px; background: #f9f9f9; border-radius: 8px; }
+.info-item i { font-size: 1.5rem; margin-bottom: 10px; display: block; }
+.info-item.positive i { color: #2ecc71; }
+.info-item.negative i { color: #e74c3c; }
+.info-item.neutral i { color: #3498db; }
+
+@media (max-width: 600px) { .info-grid { flex-direction: column; } }
+
+/* NAVBAR & FOOTER */
+.app-navbar { 
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+    margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+}
+.nav-brand { color: white; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+.nav-menu { display: flex; gap: 20px; }
+.nav-link { color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 500; transition: 0.3s; }
+.nav-link:hover, .nav-link.active { color: white; }
+.btn-logout { 
+    background: rgba(255,255,255,0.2); border: none; color: white; 
+    padding: 6px 15px; border-radius: 20px; cursor: pointer; display: flex; gap: 5px; align-items: center;
+}
+
+.app-footer {
+    text-align: center; color: rgba(255,255,255,0.5); 
+    margin-top: 40px; padding: 20px 0; font-size: 0.85rem;
+    width: 100%;
+}

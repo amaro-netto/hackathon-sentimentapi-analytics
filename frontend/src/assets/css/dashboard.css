@@ -1,0 +1,155 @@
+/* =========================================
+   ESTILO EXCLUSIVO: DASHBOARD ANALÍTICO
+   ========================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #0061ff 0%, #002855 100%);
+    color: #333;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Bolhas de Fundo */
+body::before {
+    content: ''; position: absolute; width: 600px; height: 600px;
+    background: rgba(255, 255, 255, 0.05); border-radius: 50%; top: -200px; left: -200px;
+    animation: float 20s infinite ease-in-out; pointer-events: none; z-index: 0;
+}
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(30px); } }
+
+.main-wrapper {
+    position: relative; z-index: 10;
+    width: 95%; max-width: 1400px; /* Mais largo para caber os gráficos */
+    margin: 0 auto; flex: 1;
+    display: flex; flex-direction: column;
+    padding-bottom: 40px;
+}
+
+/* --- BARRA DE FILTROS --- */
+.filters-bar {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-end; /* Alinha labels e inputs */
+    flex-wrap: wrap;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.filter-group select, .filter-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+    font-size: 0.9rem;
+    color: #333;
+    outline: none;
+}
+
+.btn-filter {
+    padding: 10px 20px;
+    background: #0061ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    height: 42px; /* Altura igual aos inputs */
+    transition: 0.2s;
+}
+.btn-filter:hover { background: #004ecc; }
+
+/* --- KPIs (Números do Topo) --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.kpi-card {
+    background: white; padding: 20px; border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+}
+
+.kpi-value { font-size: 2rem; font-weight: 700; color: #0061ff; line-height: 1.2; }
+.kpi-label { font-size: 0.85rem; color: #666; }
+.kpi-icon { font-size: 1.5rem; margin-bottom: 10px; opacity: 0.8; }
+
+/* --- GRID DE GRÁFICOS --- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 Colunas */
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-height: 350px;
+}
+
+.chart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;
+}
+.chart-header h3 { font-size: 1.1rem; color: #333; }
+
+/* Container do Canvas para o Chart.js não estourar */
+.canvas-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.full-width { grid-column: span 2; } /* Ocupa a largura total */
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; } /* Vira 1 coluna */
+    .full-width { grid-column: span 1; }
+}
+
+@media (max-width: 600px) {
+    .filters-bar { flex-direction: column; align-items: stretch; }
+}
+
+/* NAVBAR & FOOTER (Padrão) */
+.app-navbar { 
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); 
+    margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); 
+}
+.nav-brand { color: white; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+.nav-menu { display: flex; gap: 20px; }
+.nav-link { color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 500; transition: 0.3s; }
+.nav-link:hover, .nav-link.active { color: white; }
+.btn-logout { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 15px; border-radius: 20px; cursor: pointer; display: flex; gap: 5px; align-items: center; }
+
+.app-footer { text-align: center; color: rgba(255,255,255,0.5); margin-top: 40px; padding: 20px 0; font-size: 0.85rem; width: 100%; }

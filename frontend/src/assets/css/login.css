@@ -1,0 +1,82 @@
+/* =========================================
+   ESTILO EXCLUSIVO: LOGIN E CADASTRO
+   ========================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #0061ff 0%, #002855 100%);
+    height: 100vh; /* Ocupa a tela toda */
+    width: 100vw;
+    display: flex;
+    justify-content: center; /* Centraliza Horizontalmente */
+    align-items: center;     /* Centraliza Verticalmente */
+    overflow: hidden;        /* Sem barra de rolagem no login */
+    position: relative;
+}
+
+/* Fundo Geométrico Animado */
+.background-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; pointer-events: none; }
+
+.shape { position: absolute; filter: blur(50px); opacity: 0.4; animation: float 20s infinite ease-in-out; }
+.shape-1 { width: 400px; height: 400px; background: #00c6ff; border-radius: 50%; top: -50px; left: -50px; }
+.shape-2 { width: 300px; height: 300px; background: #0072ff; bottom: -50px; right: -50px; border-radius: 30% 70% 70% 30%; animation-delay: -5s; }
+.shape-3 { width: 200px; height: 200px; border: 2px solid rgba(255, 255, 255, 0.1); transform: rotate(45deg); top: 20%; right: 20%; filter: blur(2px); animation: float 15s infinite reverse; }
+
+@keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-20px) rotate(10deg); } }
+
+/* Wrapper Central */
+.login-wrapper {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; padding: 20px;
+}
+
+/* Card Branco */
+.login-card, .auth-card {
+    background: #ffffff; width: 100%; max-width: 420px;
+    padding: 2.5rem; border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Logo e Textos */
+.logo-area { margin-bottom: 2rem; }
+.logo-circle {
+    width: 60px; height: 60px; background: linear-gradient(135deg, #0072ff, #00c6ff);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 15px; font-size: 28px; color: white;
+    box-shadow: 0 5px 15px rgba(0, 114, 255, 0.3);
+}
+.logo-area h2 { color: #004e92; font-weight: 700; font-size: 1.5rem; margin-bottom: 5px; }
+.logo-area p { color: #7f8c8d; font-size: 0.9rem; font-weight: 500; }
+
+/* Inputs */
+.input-group { text-align: left; margin-bottom: 1.2rem; }
+.input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #95a5a6; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-wrapper i { position: absolute; left: 15px; color: #bdc3c7; font-size: 1rem; }
+.input-wrapper input, .input-wrapper select {
+    width: 100%; padding: 12px 12px 12px 45px; background: #f4f6f8;
+    border: 2px solid transparent; border-radius: 8px; font-size: 0.95rem; color: #2c3e50; outline: none; transition: 0.3s;
+}
+.input-wrapper input:focus { background: #fff; border-color: #0072ff; box-shadow: 0 0 0 4px rgba(0, 114, 255, 0.1); }
+
+/* Botões */
+.btn-login, .btn-primary, .btn {
+    width: 100%; padding: 14px; background: linear-gradient(90deg, #0072ff, #00c6ff);
+    color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+    cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; transition: 0.2s;
+}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4); }
+
+/* Links e Footer */
+.footer-links { margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.divider { font-size: 0.8rem; color: #bdc3c7; }
+.register-link { color: #0072ff; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+.register-link:hover { text-decoration: underline; }
+
+.page-footer { margin-top: 2rem; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; }
+.page-footer strong { color: white; }

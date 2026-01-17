@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 0. Frontend (O Site) - NOVO!
+  sentiment_frontend:
+    build: ./frontend
+    container_name: sentiment_frontend_container
+    ports:
+      - "3000:80"  # Mapeia a porta 3000 do seu PC para a 80 do Nginx
+    networks:
+      - app-network
+      
+  # 1. Banco de Dados
+  sentiment_db:
+    image: postgres:15-alpine
+    container_name: sentiment_db_container
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: sentiment_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # 2. Interface Visual do Banco (ADMINER) - NOVO!
+  adminer:
+    image: adminer
+    container_name: adminer_container
+    restart: always
+    ports:
+      - "8081:8080"  # Vamos acessar em localhost:8081
+    networks:
+      - app-network
+
+  # 3. IA Python
+  sentiment_ai:
+    build: ./data
+    container_name: sentiment_ai_container
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+  # 4. Backend Java
+  sentiment_backend:
+    build: ./backend
+    container_name: sentiment_backend_container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sentiment_db
+      - sentiment_ai
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://sentiment_db:5432/sentiment_db
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

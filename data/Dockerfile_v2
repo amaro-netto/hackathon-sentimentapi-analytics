@@ -1,0 +1,29 @@
+# Use an official Python runtime as a parent image
+FROM python:3.13-slim
+
+# WORKDIR já é /app
+WORKDIR /app
+
+# Instalação de dependências
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements_app.txt .
+RUN pip install --no-cache-dir -r requirements_app.txt
+
+# 1. Copia o app.py para a raiz do WORKDIR (/app/app.py)
+COPY app.py .
+
+# 2. Cria a pasta models no container e copia o arquivo correto vindo de data/models
+# O caminho de origem deve bater com a sua estrutura de pastas local (data/models/...)
+COPY data/models/modelo_multi.joblib ./models/
+
+# ----------------------
+
+EXPOSE 5000
+
+# Agora o python vai encontrar o app.py na pasta atual
+CMD ["python", "app.py"]
