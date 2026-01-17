@@ -40,9 +40,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="API de Predição ML", lifespan=lifespan)
 
 @app.get("/health")
-def health_check():
-    return {"status": "online", "model_loaded": model_multi is not None, "model_loaded_at": model_loaded_at}
+def healthcheck():
+    metrics = getattr(model_multi, "model_metrics", None) if model_multi is not None else None
 
+    return {
+        "status": "online",
+        "model_loaded": model_multi is not None,
+        "model_loaded_at": model_loaded_at,
+        "metrics": metrics,
+    }
 @app.post("/predict")
 def predict(request: SentimentRequest):
 
