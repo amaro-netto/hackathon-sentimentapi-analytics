@@ -8,5 +8,9 @@ public record SentimentHistoryResponse(Long id,
     Double probabilidade,
     String idioma,
     Double probIdioma,
-    LocalDateTime createdAt
-) {}
+    LocalDateTime createdAt,
+    UserSummary usuario
+) {
+    // Record interno para agrupar dados do usuário de forma limpa
+    public record UserSummary(String estado_uf, String genero) {}
+}

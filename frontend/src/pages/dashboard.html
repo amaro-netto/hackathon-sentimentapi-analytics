@@ -12,6 +12,32 @@
     <script src="../assets/js/auth-guard.js"></script>
     <script src="../assets/js/layout.js" defer></script>
     <script src="../assets/js/dashboard.js" defer></script>
+    
+    <style>
+        /* Garante que os inputs de data tenham o mesmo estilo dos selects */
+        .filter-group input[type="date"] {
+            padding: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #555;
+            outline: none;
+            background: white;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Força o gráfico novo a ocupar a linha inteira */
+        .chart-card.full-width {
+            grid-column: 1 / -1; 
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .chart-card.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
 </head>
 <body id="dashboardInterface">
 
@@ -24,13 +50,13 @@
         <div class="filters-bar">
             
             <div class="filter-group">
-                <label><i class="fas fa-calendar-alt"></i> Período</label>
-                <select id="filterPeriod">
-                    <option value="7">Últimos 7 dias</option>
-                    <option value="30" selected>Últimos 30 dias</option>
-                    <option value="90">Últimos 3 meses</option>
-                    <option value="365">Este Ano</option>
-                </select>
+                <label><i class="fas fa-calendar-alt"></i> De:</label>
+                <input type="date" id="dateStart">
+            </div>
+            
+            <div class="filter-group">
+                <label><i class="fas fa-calendar-alt"></i> Até:</label>
+                <input type="date" id="dateEnd">
             </div>
 
             <div class="filter-group">
@@ -49,11 +75,9 @@
                 <label><i class="fas fa-venus-mars"></i> Gênero</label>
                 <select id="filterGender">
                     <option value="ALL">Todos</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                    <option value="NB">Não-Binário</option>
-                    <option value="O">Outro</option>
-                    <option value="NI">Prefiro não informar</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
                 </select>
             </div>
 
@@ -91,7 +115,7 @@
             </div>
             <div class="kpi-card">
                 <i class="fas fa-chart-line kpi-icon" style="color: #f39c12;"></i>
-                <span class="kpi-value" id="kpiTrend" style="color: #f39c12;">+12%</span>
+                <span class="kpi-value" id="kpiTrend" style="color: #f39c12;">-</span>
                 <span class="kpi-label">Crescimento Mensal</span>
             </div>
         </div>
@@ -132,6 +156,16 @@
                     <canvas id="evolutionChart"></canvas>
                 </div>
             </div>
+
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3><i class="fas fa-layer-group"></i> Sentimento por Estado (Comparativo)</h3>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="stackedStateChart"></canvas>
+                </div>
+            </div>
+
         </div>
 
         <div id="app-footer-placeholder"></div>
