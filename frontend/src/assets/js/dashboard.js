@@ -1,4 +1,4 @@
-const API_URL = "/api/sentiments";
+const API_URL = "${window.location.protocol}//${window.location.hostname}:8080";
 
 document.addEventListener("DOMContentLoaded", () => {
     Chart.defaults.font.family = "'Inter', sans-serif";

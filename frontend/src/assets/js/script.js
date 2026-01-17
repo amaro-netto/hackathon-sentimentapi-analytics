@@ -18,7 +18,7 @@ const analysisDate = document.getElementById("analysisDate");
 const historyList = document.getElementById("historyList");
 const loading = document.getElementById("loading");
 
-const API_URL = "/api/sentiments"; 
+const API_URL = "${window.location.protocol}//${window.location.hostname}:8080"; 
 
 // ===============================
 // 2. FUNÇÕES UTILITÁRIAS
@@ -30,8 +30,7 @@ function formatarIdioma(codigo) {
     const mapa = {
         'PT': 'Português',
         'ES': 'Espanhol',
-        'EN': 'Inglês',
-        'FR': 'Francês'
+
     };
     const codeUpper = codigo.toUpperCase();
     return mapa[codeUpper] || codeUpper; // Retorna o nome ou a sigla se não houver no mapa
