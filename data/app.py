@@ -41,19 +41,28 @@ def health_check():
 
 @app.post("/predict")
 def predict(request: SentimentRequest):
+
     if model_multi:
         try:
             pred = model_multi.predict([request.texto])[0]
-            # Lógica de predição mantida...
             sent_pred = pred[0]
             lang_pred = pred[1]
 
             try:
-                probs = model_multi.predict_proba([request.texto])
-                # Simplificação para evitar erros de índice se o modelo mudar
-                proba_sent = float(max(probs[0][0])) 
-                proba_lang = float(max(probs[1][0]))
-            except:
+                probs_list = model_multi.predict_proba([request.texto])
+                probs_sent = probs_list[0][0]
+                probs_lang = probs_list[1][0]
+
+                moc = model_multi.named_steps['multioutputclassifier']
+                classes_sent = moc.estimators_[0].classes_
+                classes_lang = moc.estimators_[1].classes_
+
+                idx_sent = list(classes_sent).index(sent_pred)
+                idx_lang = list(classes_lang).index(lang_pred)
+
+                proba_sent = float(probs_sent[idx_sent])
+                proba_lang = float(probs_lang[idx_lang])
+            except AttributeError:
                 proba_sent = 1.0
                 proba_lang = 1.0
 
@@ -62,10 +71,12 @@ def predict(request: SentimentRequest):
                 "prob_sentimento": f"{proba_sent * 100:.2f}%",
                 "idioma": str(lang_pred),
                 "prob_idioma": f"{proba_lang * 100:.2f}%"
-            }
+                }
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
-    return {"erro": "Modelo não carregado"}
+    else:
+        # Caso caia aqui e o model_multi não esteja carregado
+        return {"erro": "Modelo Multi não carregado no servidor"}
 
 if __name__ == "__main__":
     # Ajustado para rodar o app localmente se precisar
