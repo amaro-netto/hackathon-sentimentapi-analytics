@@ -1,16 +1,29 @@
 # Projeto: SentimentAPI — Análise de Sentimentos de Feedbacks
 
-![Status: Em Desenvolvimento](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow?style=for-the-badge)
+
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/spring_boot-%236DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white)
-![Maven](https://img.shields.io/badge/Maven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)
-![H2 Database](https://img.shields.io/badge/H2_Database-%23003B57.svg?style=for-the-badge&logo=h2&logoColor=white)
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
-![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![Scikit-Learn](https://img.shields.io/badge/scikit_learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-000000?style=for-the-badge&logo=uvicorn&logoColor=white)
+![Hugging Face](https://img.shields.io/badge/HuggingFace-FFAE1A?style=for-the-badge&logo=huggingface&logoColor=black)
+![Kaggle](https://img.shields.io/badge/Kaggle-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)
+![Imbalanced-learn](https://img.shields.io/badge/Imbalanced--learn-005571?style=for-the-badge&logo=python&logoColor=white)
+![Joblib](https://img.shields.io/badge/Joblib-005571?style=for-the-badge&logo=python&logoColor=white)
+![NLTK](https://img.shields.io/badge/NLTK-154360?style=for-the-badge&logo=python&logoColor=white)
+![SpaCy](https://img.shields.io/badge/SpaCy-09A3D5?style=for-the-badge&logo=spacy&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C?style=for-the-badge&logoColor=white)
+![Seaborn](https://img.shields.io/badge/Seaborn-2E6F95?style=for-the-badge&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)
+![H2 Database](https://img.shields.io/badge/H2_Database-%23003B57.svg?style=for-the-badge&logo=h2&logoColor=white)
 ![PlantUML](https://img.shields.io/badge/PlantUML-%23f2f2f2.svg?style=for-the-badge&logo=plantuml&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![Oracle Cloud](https://img.shields.io/badge/Oracle_Cloud-F80000?style=for-the-badge&logo=oracle&logoColor=white)
+
 
 ---
 
@@ -53,19 +66,32 @@ Seguindo a arquitetura de microserviços, adotaremos a seguinte stack:
 **Backend:** 
 * Java 17 + Spring Boot 3 - API /sentiment
 * Spring Web (REST) - Endpoints
-* OpenFeign - Cliente HTTP → Python
-* H2 Database - Banco em memória
-* Swagger/OpenAPI - Documentação
+* Spring Security (JWT)
+* Spring Validation
+* Lombok
+* OpenFeign (HTTP client → Python)
+* H2 Database (em memória)
+* JUnit + Mockito (testes)
+* Swagger/OpenAPI (Documentação)
 
 **Data Science:**
-* Python + Pandas + Scikit-learn - Treinar modelo
-* Joblib - Persistir modelo
-* FastAPI - Servidor leve para predição
-* Streamlit (opcional) - Visualização
+  * Python 3.10 
+  * Pandas, NumPy, Scikit-learn  
+  * Joblib (persistência de modelo)  
+  * FastAPI + Uvicorn (servidor de predição) 
+  * Datasets (Hugging Face) 
+  * Huggingface Hub  
+  * KaggleHub 
+  * Imbalanced-learn (tratamento de dados desbalanceados) 
+  * NLTK / SpaCy (pré-processamento de texto, se aplicável) 
+  * Matplotlib / Seaborn (visualização de dados) 
+  
 
 **Infra/Dev:**
 * Git / GitHub (Monorepo)
-* Docker (futuro)
+* Docker + Docker Compose
+* GitHub Actions (CI/CD)
+* PlantUML(fluxogramas)
 
 **Build/Deploy:**
 * Oracle Cloud (futuro) 
@@ -73,23 +99,65 @@ Seguindo a arquitetura de microserviços, adotaremos a seguinte stack:
 ### 📁 **Estrutura do Projeto**
 * `/backend` - Código fonte da API Java
 * `/data` - Notebooks e scripts de treinamento do modelo
-* `/docs` - Documentação complementar
+* `/docs` - Documentação e fluxogramas
+  * `fluxoCadastro.png` — Fluxo de cadastro de usuário 
+  * `fluxoLogin.png` — Fluxo de autenticação  
+  * `fluxoAnalise.png` — Fluxo de análise de sentimento 
+  * `INFO.TXT` — Informações complementares 
+* `/frontend` — Interface web da aplicação
+  * `index.html` — Página inicial
+  * `README.md` — Documentação do front-end
+  * `server.py` — Script de servidor local (opcional)
+  * `/src`
+    * `/assets`
+      * `/css`
+        - app.css
+        - dashboard.css
+        - login.css
+        - style.css
+      * `/js`
+        - auth-guard.js
+        - dashboard.js
+        - layout.js
+        - login.js
+        - register.js
+        - script.js
+    * `/pages`
+      - dashboard.html
+      - register.html
+      - sentiment.html
+
 #### Visão Geral do Repositório
 ```
 hackathon-sentimentapi-analytics
 │
-├── backend/                # Spring Boot (Java)
+├── backend/                # API Java (Spring Boot)
 │   ├── src/...
 │   └── pom.xml
 │
-├── data/                   # Python
-│   ├── notebooks/          # Jupyter
-│   ├── model/              # Modelo .joblib
+├── data/                   # Serviço de Machine Learning (Python)
+│   ├── notebooks/          # Jupyter Notebooks
+│   ├── model/              # Modelo treinado (.joblib)
 │   ├── app.py              # FastAPI
-│   └── requirements.txt
+│   └── requirements.txt    # Dependências Python
 │
-├── docs/                    # Documentação
-└── README.md
+├── frontend/               # Interface Web
+│   ├── index.html
+│   ├── server.py
+│   └── src/
+│       ├── assets/
+│       │   ├── css/        # Estilos
+│       │   └── js/         # Scripts
+│       └── pages/          # Páginas HTML
+│
+├── docs/                   # Documentação
+│   └── fluxogramas/
+│       ├── fluxoCadastro.png
+│       ├── fluxoLogin.png
+│       ├── fluxoAnalise.png
+│       └── INFO.TXT
+│
+└── README.md               # Documentação principal do projeto
 ```
 ---
 ### 🚀 Execução do Projeto
@@ -197,23 +265,6 @@ Representa o processo de autenticação de um usuário no sistema.
 Representa o processo de classificação automática de feedbacks em positivo, negativo ou neutro.
 ![Fluxo de Análise de Sentimento](docs/fluxogramas/fluxoAnalise.png)
 
-#### Visão Geral do Repositório
-```
-hackathon-sentimentapi-analytics
-│
-├── backend/                # Spring Boot (Java)
-│   ├── src/...
-│   └── pom.xml
-│
-├── data/                   # Python
-│   ├── notebooks/          # Jupyter
-│   ├── model/              # Modelo .joblib
-│   ├── app.py              # FastAPI
-│   └── requirements.txt
-│
-├── doc/                    # Documentação
-└── README.md
-```
 ---
 
 ### 👥 **Equipe do Projeto**
