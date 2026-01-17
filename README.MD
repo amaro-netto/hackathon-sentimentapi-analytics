@@ -197,6 +197,23 @@ Representa o processo de autenticação de um usuário no sistema.
 Representa o processo de classificação automática de feedbacks em positivo, negativo ou neutro.
 ![Fluxo de Análise de Sentimento](docs/fluxogramas/fluxoAnalise.png)
 
+#### Visão Geral do Repositório
+```
+hackathon-sentimentapi-analytics
+│
+├── backend/                # Spring Boot (Java)
+│   ├── src/...
+│   └── pom.xml
+│
+├── data/                   # Python
+│   ├── notebooks/          # Jupyter
+│   ├── model/              # Modelo .joblib
+│   ├── app.py              # FastAPI
+│   └── requirements.txt
+│
+├── doc/                    # Documentação
+└── README.md
+```
 ---
 
 ### 👥 **Equipe do Projeto**
