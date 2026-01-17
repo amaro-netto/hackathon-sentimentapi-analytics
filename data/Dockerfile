@@ -6,11 +6,26 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Instala dependências
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_app.txt .
+RUN pip install --no-cache-dir -r requirements_app.txt
 
-# Copia o código da IA
-COPY . .
+# 2. Instalação de Dependências do Sistema (Sugestão do colega)
+# Isso é ÓTIMO para evitar erros ao instalar bibliotecas pesadas de IA
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Dependências Python
+# Copia apenas o requirements primeiro para aproveitar o cache do Docker
+COPY requirements_app.txt .
+RUN pip install --no-cache-dir -r requirements_app.txt
+
+# 4. Cópia Seletiva dos Arquivos (Ajuste Solicitado)
+# Em vez de COPY . . (que copia tudo), copiamos um por um
+
+# Copia o código da API
+COPY app.py .
 
 # Copia a pasta de modelos (O docker cria a pasta 'models' automaticamente no destino)
 COPY models/ ./models/
