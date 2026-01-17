@@ -1,3 +1,4 @@
+from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -11,17 +12,19 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 # CORREÇÃO: Removemos o ".." pois agora estarão lado a lado
 MODEL_PATH_MULTI = os.path.join(CURRENT_DIR, "models", "modelo_multi.joblib")
 model_multi = None
+model_loaded_at = None
 
 class SentimentRequest(BaseModel):
     texto: str
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global model_multi
+    global model_multi, model_loaded_at
     if os.path.exists(MODEL_PATH_MULTI):
         try:
             model_multi = joblib.load(MODEL_PATH_MULTI)
-            print(f"✅ Modelo carregado de: {MODEL_PATH_MULTI}")
+            model_loaded_at = datetime.now()
+            print(f"✅ Modelo carregado de: {MODEL_PATH_MULTI}\n em {model_loaded_at}")
         except Exception as e:
             print(f"❌ Erro ao carregar Modelo: {e}")
     else:
@@ -30,6 +33,7 @@ async def lifespan(app: FastAPI):
         print(f"Conteúdo da pasta: {os.listdir(CURRENT_DIR)}")
 
     yield
+    print("🛑 Desligando API e limpando recursos...")
     model_multi = None
 
 # A variável precisa se chamar 'app' para o Docker achar
@@ -37,7 +41,7 @@ app = FastAPI(title="API de Predição ML", lifespan=lifespan)
 
 @app.get("/health")
 def health_check():
-    return {"status": "online", "model_loaded": model_multi is not None}
+    return {"status": "online", "model_loaded": model_multi is not None, "model_loaded_at": model_loaded_at}
 
 @app.post("/predict")
 def predict(request: SentimentRequest):
