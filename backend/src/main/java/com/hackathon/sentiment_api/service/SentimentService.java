@@ -46,6 +46,7 @@ public class SentimentService {
         Double probParaBanco = 0.0;
         try {
             Object p = resposta.probabilidade();
+            if (p != null) { // <--- VERIFICAÇÃO DE NULO ADICIONADA
             if (p instanceof Number) {
                 probParaBanco = ((Number) p).doubleValue();
             } else if (p instanceof String) {
@@ -53,6 +54,7 @@ public class SentimentService {
                 String pStr = (String) p;
                 pStr = pStr.replace("%", "").replace(",", ".");
                 probParaBanco = Double.parseDouble(pStr);
+               }
             }
         } catch (Exception e) {
             log.warn("⚠️ Conversão de probabilidade falhou, salvando 0.0");
@@ -62,12 +64,14 @@ public class SentimentService {
         Double probIdiomaParaBanco = 0.0;
         try {
             Object pi = resposta.probIdioma();
+            if (pi != null) {
             if (pi instanceof Number) {
                 probIdiomaParaBanco = ((Number) pi).doubleValue();
             } else if (pi instanceof String) {
                 String piStr = (String) pi;
                 piStr = piStr.replace("%", "").replace(",", ".");
                 probIdiomaParaBanco = Double.parseDouble(piStr);
+               }
             }
         } catch (Exception e) {
             log.warn("⚠️ Conversão de probabilidade de idioma falhou, salvando 0.0");

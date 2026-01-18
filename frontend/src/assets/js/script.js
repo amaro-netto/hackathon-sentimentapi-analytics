@@ -28,6 +28,17 @@ const API_URL = "http://localhost:8080/api/sentiments";
 // 2. FUNÇÕES UTILITÁRIAS
 // ===============================
 
+// --- NOVA FUNÇÃO: TRADUTOR DE IDIOMAS ---
+function formatarIdioma(codigo) {
+    if (!codigo) return "Não Identificado";
+    const mapa = {
+        'PT': 'Português',
+        'ES': 'Espanhol',
+    };
+    const codeUpper = codigo.toUpperCase();
+    return mapa[codeUpper] || codeUpper; // Retorna o nome ou a sigla se não houver no mapa
+}
+
 // Garante que temos o token para falar com o Java
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
@@ -117,10 +128,7 @@ async function runAnalysis(text) {
 
         const data = await response.json();
 
-        // --- CORREÇÃO DE NOMES (Mapping Inteligente) ---
-        // O Python retorna: sentimento, prob_sentimento, idioma, prob_idioma
-        // O Java DTO pode retornar: sentiment, probability, language, etc.
-        // Aqui aceitamos qualquer um dos dois:
+
         
         const sentimentRaw = data.sentimento || data.sentiment || data.previsao || "Neutro";
         const probRaw = data.prob_sentimento || data.probabilidade || data.probability || 0;
@@ -130,7 +138,7 @@ async function runAnalysis(text) {
         const resultData = {
             sentiment: capitalize(sentimentRaw),
             confidence: fixPercentage(probRaw),
-            language: langRaw.toUpperCase(),
+            language: formatarIdioma(langRaw),
             langConfidence: fixPercentage(probLangRaw), 
             date: new Date()
         };
@@ -210,7 +218,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 addToHistoryVisual(item.texto || item.text, {
                     sentiment: capitalize(sent),
                     confidence: fixPercentage(prob),
-                    language: lang.toUpperCase(),
+                    language: formatarIdioma(lang),
                     date: new Date(dateRaw) 
                 });
             });

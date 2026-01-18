@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Dependências Python
@@ -19,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements_app.txt
 COPY app.py .
 
 # Copia a pasta de modelos (O docker cria a pasta 'models' automaticamente no destino)
-COPY data/models/modelo_multi.joblib ./models/
+COPY models/modelo_multi.joblib ./models/
 
 # 5. Execução
 EXPOSE 5000
