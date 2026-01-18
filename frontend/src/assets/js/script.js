@@ -5,20 +5,24 @@ const reviewInput = document.getElementById("reviewInput");
 const classifyBtn = document.getElementById("classifyBtn");
 const charCount = document.getElementById("charCount");
 
+// Elementos da Área de Resultado (Esquerda)
 const resultContainer = document.getElementById("result");
 const sentimentLabel = document.getElementById("sentimentLabel");
 const confidenceValue = document.getElementById("confidenceValue");
 const confidenceBar = document.getElementById("confidenceBar");
 
+// Elementos de Idioma
 const languageLabel = document.getElementById("languageLabel");
 const languageProb = document.getElementById("languageProb");
 const langConfidenceBar = document.getElementById("langConfidenceBar");
 const analysisDate = document.getElementById("analysisDate");
 
+// Elementos Globais
 const historyList = document.getElementById("historyList");
 const loading = document.getElementById("loading");
 
-const API_URL = "${window.location.protocol}//${window.location.hostname}:8080"; 
+// Configuração da API (Padrão Unificado)
+const API_URL = "http://localhost:8080/api/sentiments"; 
 
 // ===============================
 // 2. FUNÇÕES UTILITÁRIAS
@@ -30,12 +34,12 @@ function formatarIdioma(codigo) {
     const mapa = {
         'PT': 'Português',
         'ES': 'Espanhol',
-
     };
     const codeUpper = codigo.toUpperCase();
     return mapa[codeUpper] || codeUpper; // Retorna o nome ou a sigla se não houver no mapa
 }
 
+// Garante que temos o token para falar com o Java
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -65,8 +69,11 @@ function capitalize(text) {
 
 function fixPercentage(val) {
     if (!val) return 0;
+    // Limpa string "98.5%" para número 98.5
     let num = parseFloat(String(val).replace("%", ""));
+    // Se vier 0.98, transforma em 98
     if (num <= 1 && num > 0) return Math.round(num * 100);
+    // Trava teto em 100
     if (num > 100) return 100;
     return Math.round(num);
 }
@@ -120,6 +127,8 @@ async function runAnalysis(text) {
         if (!response.ok) throw new Error("Erro ao consultar API");
 
         const data = await response.json();
+
+
         
         const sentimentRaw = data.sentimento || data.sentiment || data.previsao || "Neutro";
         const probRaw = data.prob_sentimento || data.probabilidade || data.probability || 0;
@@ -129,8 +138,7 @@ async function runAnalysis(text) {
         const resultData = {
             sentiment: capitalize(sentimentRaw),
             confidence: fixPercentage(probRaw),
-            // --- APLICAÇÃO DA MÁSCARA AQUI ---
-            language: formatarIdioma(langRaw), 
+            language: formatarIdioma(langRaw),
             langConfidence: fixPercentage(probLangRaw), 
             date: new Date()
         };
@@ -162,6 +170,7 @@ function displayResult(data) {
         analysisDate.textContent = data.date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
     }
 
+    // Barra Sentimento
     if(confidenceBar) {
         confidenceBar.style.width = `${data.confidence}%`; 
         confidenceBar.className = "progress-bar-fill"; 
@@ -170,10 +179,12 @@ function displayResult(data) {
         else confidenceBar.classList.add("Neutro");
     }
 
+    // Barra Idioma
     if(langConfidenceBar) {
         langConfidenceBar.style.width = `${data.langConfidence}%`;
     }
 
+    // Cor do Card Principal
     resultContainer.className = "result-container"; 
     if(data.sentiment.includes("Positiv")) resultContainer.classList.add("Positivo");
     else if(data.sentiment.includes("Negativ")) resultContainer.classList.add("Negativo");
@@ -188,13 +199,17 @@ function displayResult(data) {
 
 window.addEventListener("DOMContentLoaded", () => {
     if(localStorage.getItem("token")) {
+        // CORREÇÃO: Removemos o "/history" para bater com o Controller novo
         fetch(API_URL, { headers: getAuthHeaders() })
         .then(r => r.ok ? r.json() : [])
         .then(data => {
             if(historyList) historyList.innerHTML = ""; 
+            
+            // Inverte para mostrar o mais recente primeiro
             const listaInvertida = Array.isArray(data) ? data.slice().reverse() : [];
 
             listaInvertida.forEach(item => {
+                // Mapping para o Histórico também
                 const sent = item.sentimento || item.sentiment || item.previsao || "Neutro";
                 const prob = item.prob_sentimento || item.probabilidade || item.probability || 0;
                 const lang = item.idioma || item.language || "PT";
@@ -203,8 +218,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 addToHistoryVisual(item.texto || item.text, {
                     sentiment: capitalize(sent),
                     confidence: fixPercentage(prob),
-                    // --- APLICAÇÃO DA MÁSCARA NO HISTÓRICO ---
-                    language: formatarIdioma(lang), 
+                    language: formatarIdioma(lang),
                     date: new Date(dateRaw) 
                 });
             });

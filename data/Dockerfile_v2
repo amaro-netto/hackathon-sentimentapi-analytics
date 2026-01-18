@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements_app.txt
 COPY app.py .
 
 # 2. Cria a pasta models no container e copia o arquivo correto vindo de data/models
-# O caminho de origem deve bater com a sua estrutura de pastas local (data/models/...)
+# O caminho de origem deve bater com a sua estrutura de pastas local (/models/...)
 COPY data/models/modelo_multi.joblib ./models/
 
 # ----------------------

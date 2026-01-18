@@ -54,7 +54,7 @@ public class SentimentService {
                 String pStr = (String) p;
                 pStr = pStr.replace("%", "").replace(",", ".");
                 probParaBanco = Double.parseDouble(pStr);
-            }
+               }
             }
         } catch (Exception e) {
             log.warn("⚠️ Conversão de probabilidade falhou, salvando 0.0");
@@ -71,7 +71,7 @@ public class SentimentService {
                 String piStr = (String) pi;
                 piStr = piStr.replace("%", "").replace(",", ".");
                 probIdiomaParaBanco = Double.parseDouble(piStr);
-            }
+               }
             }
         } catch (Exception e) {
             log.warn("⚠️ Conversão de probabilidade de idioma falhou, salvando 0.0");

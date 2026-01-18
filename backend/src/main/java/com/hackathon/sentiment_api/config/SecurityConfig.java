@@ -34,6 +34,7 @@ public class SecurityConfig {
                     "/",
                     "/index.html", 
                     "/register.html",
+                    "/login.html",
                     "/sentiment.html",
                     "/style/**",
                     "/js/**",
@@ -68,11 +69,10 @@ public class SecurityConfig {
         
         // Libera as origens comuns de frontend (Python Server, Live Server, React)
         // O erro na sua imagem mostrava a porta 3000, então adicionei ela.
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8000", "http://localhost:3000", "http://127.0.0.1:8000"));
         
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        configuration.setAllowCredentials(true);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
