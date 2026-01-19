@@ -268,12 +268,9 @@ Representa o processo de classificação automática de feedbacks em positivo, n
 ---
 
 ### 👥 **Equipe do Projeto**
-#### **Backend Team**
- [![Dev Backend](https://img.shields.io/badge/Backend_Dev-Amaro_Netto-red?style=for-the-badge&logo=openjdk&logoColor=white)](https://github.com/amaro-netto)
-[![Dev Backend](https://img.shields.io/badge/Backend_Dev-Michele_Lescano-red?style=for-the-badge&logo=openjdk&logoColor=white)](https://github.com/MicheleLescano)
-[![Dev Backend](https://img.shields.io/badge/Backend_Dev-Rodrigo_Franco-red?style=for-the-badge&logo=openjdk&logoColor=white)](https://github.com/Rshinna)
-#### **Data Team**
- [![Data Scientist](https://img.shields.io/badge/Data_Scientist-Bruno_Ricardo-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://github.com/brunorm86)
-[![Data Scientist](https://img.shields.io/badge/Data_Scientist-Alessandro_Apolinário-3776AB?style=for-the-badge&logo=python&logoColor=white)]()
+
+<a href="https://github.com/alessandroapolinario" title="Alessandro Apolin"><img width="160" src="https://i.ibb.co/JWjKwMx9/Alessandro-Apolin-rio.png"/></a> <a href="https://github.com/amaro-netto" title="Amaro Netto"><img width="160" src="https://i.ibb.co/Gf4bW8GB/backend-java.png"/></a> <a href="https://github.com/brunorm86" title="Bruno Machado"><img width="160" src="https://i.ibb.co/cc3gb9dT/bruno.png"/></a> <a href="https://github.com/MicheleLescano" title="Michele Lescano"><img width="160" src="https://i.ibb.co/gbV6q2f2/michele.png"/></a> <a href="https://github.com/Rshinna" title="Rodrigo Franco"><img width="160" src="https://i.ibb.co/jZ9TJ416/rodrigo.png"/></a> 
+
+
 
 ---
