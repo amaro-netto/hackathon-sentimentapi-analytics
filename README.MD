@@ -255,14 +255,17 @@ Abaixo estão os fluxos principais da aplicação:
 
 #### 🔐 Fluxo de Cadastro
 Representa o processo de criação de um novo usuário no sistema. 
+
 ![Fluxo de Cadastro](docs/fluxogramas/fluxoCadastro.png)
 
 #### 🔑 Fluxo de Login
 Representa o processo de autenticação de um usuário no sistema. 
+
 ![Fluxo de Login](docs/fluxogramas/fluxoLogin.png)
 
 #### 💬 Fluxo de Análise de Sentimento
 Representa o processo de classificação automática de feedbacks em positivo, negativo ou neutro.
+
 ![Fluxo de Análise de Sentimento](docs/fluxogramas/fluxoAnalise.png)
 
 ---
